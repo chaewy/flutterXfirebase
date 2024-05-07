@@ -1,9 +1,12 @@
 // ignore_for_file: prefer_const_constructors, use_super_parameters
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+import 'forgot_pw_page.dart';
 
 class LoginPage extends StatefulWidget {
   final VoidCallback showRegisterPage;
@@ -112,6 +115,30 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
+
+              SizedBox(height: 15),
+
+              //forgot passowrd
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) {
+                            return ForgotPasswordPage();
+                          }),
+                        );
+                      },
+                      child: Text("Forgot Password"),
+                    ),
+                  ],
+                ),
+              ),
+
             
               SizedBox(height: 15),
             
