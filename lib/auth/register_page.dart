@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -26,14 +27,25 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
+  //create a user
   Future signUp() async{
-    await FirebaseAuth.instance.createUserWithEmailAndPassword(
+    UserCredential userCredential = await  FirebaseAuth.instance.createUserWithEmailAndPassword(
       email: _emailController.text.trim(), 
-      password: _passwordController.text.trim()
+      password: _passwordController.text.trim(),
       );
 
+    //after create the user, create a documents
+    FirebaseFirestore.instance
+    .collection("Users")
+    .doc(userCredential.user!.email)
+    .set({
+      'username': _emailController.text.split('@')[0],
+      'bio': 'empty bio..'
+    });
 
   }
+
+
 
   @override
   Widget build(BuildContext context) {
