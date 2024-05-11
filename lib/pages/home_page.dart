@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/auth/main_page.dart';
 import 'package:flutter_application_1/my_components/drawer.dart';
+import 'package:flutter_application_1/pages/post/add_post_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -29,6 +31,7 @@ final user = FirebaseAuth.instance.currentUser!;
                 MaterialButton(
                   onPressed: () {
                     FirebaseAuth.instance.signOut();
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => MainPage()));
                   },
                   color: Colors.yellow,
                   //backgroundColor: Color.fromARGB(255, 255, 244, 93),
@@ -43,6 +46,13 @@ final user = FirebaseAuth.instance.currentUser!;
 
         ],
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => Add()));
+        },
+        child: Icon(Icons.add),
+      ),
+
 
       drawer: MyDrawer(),
       

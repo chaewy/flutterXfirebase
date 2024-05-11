@@ -39,6 +39,7 @@ class _RegisterPageState extends State<RegisterPage> {
     .collection("Users")
     .doc(userCredential.user!.email)
     .set({
+      'uid':userCredential.user!.uid, //tambah for uid
       'username': _emailController.text.split('@')[0],
       'bio': 'empty bio..'
     });
