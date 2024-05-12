@@ -41,7 +41,9 @@ class _RegisterPageState extends State<RegisterPage> {
     .set({
       'uid':userCredential.user!.uid, //tambah for uid
       'username': _emailController.text.split('@')[0],
-      'bio': 'empty bio..'
+      'bio': '',
+
+
     });
 
   }

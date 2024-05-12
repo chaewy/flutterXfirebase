@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_application_1/models/post.dart';
 
+// FOR ADD POST
+
 class PostService{
 
 List<PostModel> _postListFromSnapshot(QuerySnapshot snapshot) {

@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/models/post.dart';
 import 'package:flutter_application_1/pages/post/list.dart';
+import 'package:flutter_application_1/pages/profile_edit_page.dart';
 import 'package:flutter_application_1/services/add_post.dart';
 import 'package:provider/provider.dart';
 
@@ -109,8 +110,18 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Scaffold(
         appBar: AppBar(
           title: Text('Profile'),
-          elevation: 0,
+            elevation: 0,
+            actions: [
+        IconButton(
+          icon: Icon(Icons.edit),
+          onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => Edit()));
+        },
         ),
+      ],
+    ),
+        
+        
         drawer: MyDrawer(),
         body: Container(
           child: ListPost(),
