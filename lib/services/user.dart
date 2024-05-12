@@ -1,11 +1,61 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_application_1/models/user.dart';
 import 'package:flutter_application_1/services/utils.dart';
+
 
 class UserService {
 
   UtilsService _utilsService = UtilsService();
+
+
+  // fetch data for display at profile page
+
+  UserModel _userFromFirebaseSnapshot(DocumentSnapshot snapshot) {
+  if (snapshot != null && snapshot.exists) {
+    final data = snapshot.data() as Map<String, dynamic>?; // Explicitly cast to Map<String, dynamic>
+    if (data != null) {
+      return UserModel(
+        id: snapshot.id,
+        name: data['name'] ?? '',
+        profileImageUrl: data['profileImageUrl'] ?? '',
+        bannerImageUrl: data['bannerImageUrl'] ?? '',
+        email: data['email'] ?? '',
+      );
+    }
+  }
+  // Return a default UserModel object or throw an exception, depending on your requirements.
+  return UserModel(
+    id: '',
+    name: '',
+    profileImageUrl: '',
+    bannerImageUrl: '',
+    email: '',
+  );
+}
+
+
+
+
+//-----------------------------------------------------------------------------------------------------
+// for display at profile page
+
+Stream<UserModel> getUserInfo(uid){
+  return FirebaseFirestore.instance
+  .collection("Users")
+  .doc(uid).snapshots()
+  //.map(_userFromFirebaseSnapshot);
+  .map((snapshot) => _userFromFirebaseSnapshot(snapshot));
+}
+
+
+
+
+
+
+  // POST IMAGE TO STORAGE AND FIRESTORE
+
 
   Future<void> updateProfile(
     File bannerImage, File profileImage, String name) async {
