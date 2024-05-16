@@ -9,6 +9,19 @@ class UserService {
 
   UtilsService _utilsService = UtilsService();
 
+  List<UserModel> _userListFromQuerySnapshot(QuerySnapshot snapshot){
+    return snapshot.docs.map((doc){
+      return UserModel(
+        uid: doc.id,
+        name: doc['name'] ?? '',
+        profileImageUrl: doc['profileImageUrl'] ?? '',
+        bannerImageUrl: doc['bannerImageUrl'] ?? '',
+        email: doc['email'] ?? '',
+      );
+    }).toList();
+
+  }
+
 
   // fetch data for display at profile page
 
@@ -17,7 +30,7 @@ class UserService {
     final data = snapshot.data() as Map<String, dynamic>?; // Explicitly cast to Map<String, dynamic>
     if (data != null) {
       return UserModel(
-        id: snapshot.id,
+        uid: snapshot.id,
         name: data['name'] ?? '',
         profileImageUrl: data['profileImageUrl'] ?? '',
         bannerImageUrl: data['bannerImageUrl'] ?? '',
@@ -27,7 +40,7 @@ class UserService {
   }
   // Return a default UserModel object or throw an exception, depending on your requirements.
   return UserModel(
-    id: '',
+    uid: '',
     name: '',
     profileImageUrl: '',
     bannerImageUrl: '',
@@ -48,6 +61,19 @@ Stream<UserModel> getUserInfo(uid){
   //.map(_userFromFirebaseSnapshot);
   .map((snapshot) => _userFromFirebaseSnapshot(snapshot));
 }
+
+//-----------------------------------------------------------------------------------------------------
+// for search 
+
+Stream<List<UserModel>> queryByName(String search) {
+  return FirebaseFirestore.instance
+      .collection("Users")
+        .where('name', isEqualTo: search.toLowerCase())
+        .limit(10)
+        .snapshots()
+        .map((snapshot) => _userListFromQuerySnapshot(snapshot));
+}
+
 
 
 
@@ -96,7 +122,7 @@ Stream<UserModel> getUserInfo(uid){
 
   try {
       // Reference the 'Users' collection and the specific document
-      DocumentReference userDocRef = userCollection.doc(currentUser.email);
+      DocumentReference userDocRef = userCollection.doc(currentUser.uid);
 
       // Update the document with the new data
       await userDocRef.update(data);
@@ -107,4 +133,6 @@ Stream<UserModel> getUserInfo(uid){
     }
 
   }
+
+  getCurrentUserSnapshot(String uid) {}
 }

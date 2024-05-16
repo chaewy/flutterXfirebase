@@ -1,16 +1,18 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserModel {
-
-  final String id;
-  final String bannerImageUrl;
-  final String profileImageUrl;
+  final String uid;
   final String name;
+  final String profileImageUrl;
+  final String bannerImageUrl;
   final String email;
 
   UserModel({
-    required this.id, 
-    required this.bannerImageUrl, 
-    required this.profileImageUrl, 
-    required this.email, 
-    required this.name});
+    required this.uid,
+     required this.name,
+     required this.profileImageUrl,
+    required this.bannerImageUrl,
+    required this.email,
+   
+  });
 }

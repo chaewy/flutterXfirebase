@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class RegisterPage extends StatefulWidget {
+
+  //final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   final VoidCallback showloginpage; 
   const RegisterPage({
     Key? key,
@@ -37,13 +40,14 @@ class _RegisterPageState extends State<RegisterPage> {
     //after create the user, create a documents
     FirebaseFirestore.instance
     .collection("Users")
-    .doc(userCredential.user!.email)
+    .doc(userCredential.user!.uid) // TUKAR
     .set({
       'uid':userCredential.user!.uid, //tambah for uid
+      'email': userCredential.user!.email,
       'name': _emailController.text.split('@')[0],
+      'bannerImageUrl': 'https://firebasestorage.googleapis.com/v0/b/hobby-b1c8b.appspot.com/o/default%2Fdownload.png?alt=media&token=3a86e147-621c-4d06-9f49-287a693170ae',
+      'profileImageUrl': 'https://firebasestorage.googleapis.com/v0/b/hobby-b1c8b.appspot.com/o/default%2Fdefault_profile_icon.jpg?alt=media&token=4d751354-0697-4c92-90ee-a58a565f0281',
       'bio': '',
-
-
     });
 
   }
