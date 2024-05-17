@@ -39,6 +39,7 @@ class _ChatPageState extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         title: Text(widget.receiverEmail),
         backgroundColor: Colors.transparent,
@@ -98,12 +99,15 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
-  Widget _buildUserInput() {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 50.0),
-      child: Row(
-        children: [
-          Expanded(
+ Widget _buildUserInput() {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 50.0),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: TextField(
               controller: _messageController,
               decoration: const InputDecoration(
@@ -113,22 +117,27 @@ class _ChatPageState extends State<ChatPage> {
               ),
             ),
           ),
-          Container(
-            decoration: const BoxDecoration(
-              color: Colors.yellow,
-              shape: BoxShape.circle,
-            ),
-            margin: const EdgeInsets.only(right: 25),
+        ),
+        SizedBox(width: 16), 
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.yellow,
+            borderRadius: BorderRadius.circular(30), 
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), 
+          child: Padding(
+            padding: const EdgeInsets.all(2.0), 
             child: IconButton(
               onPressed: sendMessages,
               icon: const Icon(
-                Icons.arrow_upward,
-                color: Colors.white,
+                Icons.send, 
+                color: Color.fromARGB(255, 0, 0, 0),
               ),
             ),
-          )
-        ],
-      ),
-    );
-  }
+          ),
+        ),
+      ],
+    ),
+  );
+}
 }

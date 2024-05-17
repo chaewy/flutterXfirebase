@@ -1,12 +1,21 @@
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/models/post.dart';
 import 'package:flutter_application_1/models/user.dart';
+import 'package:flutter_application_1/pages/post/list.dart';
 import 'package:flutter_application_1/profile/profile_edit_page.dart';
+import 'package:flutter_application_1/provider.dart';
 import 'package:flutter_application_1/services/user.dart';
+import 'package:provider/provider.dart';
 
 class ProfilePage extends StatelessWidget {
   final UserModel user;
 
-  const ProfilePage({Key? key, required this.user}) : super(key: key);
+  ProfilePage({
+    Key? key,
+    required this.user,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -40,17 +49,6 @@ class ProfilePage extends StatelessWidget {
                           fit: BoxFit.cover,
                         ),
                       ),
-                      actions: [
-                        IconButton(
-                          icon: Icon(Icons.edit),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => Edit()),
-                            );
-                          },
-                        ),
-                      ],
                     ),
                   ];
                 },
@@ -77,15 +75,16 @@ class ProfilePage extends StatelessWidget {
                                       height: 60,
                                       width: 60,
                                     ),
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(builder: (context) => Edit()),
-                                        );
-                                      }, 
-                                      child: Text('Edit profile')
-                                    ),
+                                    if (FirebaseAuth.instance.currentUser!.uid == user.uid)
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(builder: (context) => Edit()),
+                                          );
+                                        },
+                                        child: Text('Edit profile'),
+                                      ),
                                   ],
                                 ),
                                 Align(
@@ -106,6 +105,25 @@ class ProfilePage extends StatelessWidget {
                           ),
                         ],
                       ),
+                    ),
+                    // Display user posts using PostProvider
+                    Consumer<PostProvider>(
+                      builder: (context, postProvider, _) {
+                        postProvider.fetchUserPosts(user.uid); // Fetch user posts using PostProvider
+                        List<PostModel> userPosts = postProvider.postList;
+
+                        return SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (BuildContext context, int index) {
+                              if (index < userPosts.length) {
+                                return ListPost(); // Pass each post to ListPost widget
+                              }
+                              return SizedBox(); // Return a sized box for empty space
+                            },
+                            childCount: userPosts.length,
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),

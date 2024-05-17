@@ -13,5 +13,3 @@ class PostModel {
     required this.timestamp,
   });
 }
-
-//PostModel(this.id, this.creator, this.text, this.timestamp);

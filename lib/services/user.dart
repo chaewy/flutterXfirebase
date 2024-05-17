@@ -74,10 +74,18 @@ Stream<List<UserModel>> queryByName(String search) {
         .map((snapshot) => _userListFromQuerySnapshot(snapshot));
 }
 
-
-
-
-
+//---------------------------------------------------------
+Stream<bool> isFollowing(uid, otherId){
+  return FirebaseFirestore.instance
+  .collection("Users")
+  .doc(uid)
+  .collection("following")
+  .doc(otherId)
+  .snapshots()
+  .map((snapshot) {
+  return snapshot.exists;
+  });
+}
 
 
   // POST IMAGE TO STORAGE AND FIRESTORE

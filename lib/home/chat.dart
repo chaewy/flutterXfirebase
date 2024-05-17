@@ -1,8 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/models/user.dart';
-import 'package:flutter_application_1/my_components/drawer.dart';
+
 import 'package:flutter_application_1/my_components/user_tile.dart';
 import 'package:flutter_application_1/pages/chat_page.dart';
 import 'package:flutter_application_1/services/chat_service.dart';
@@ -34,6 +34,7 @@ class Chat extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.background,
       appBar: AppBar(
         title: const Text('Chat'),
         backgroundColor: Colors.transparent,

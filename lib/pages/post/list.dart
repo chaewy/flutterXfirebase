@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/models/post.dart';
+import 'package:flutter_application_1/models/user.dart';
+import 'package:flutter_application_1/services/add_post.dart';
+import 'package:flutter_application_1/services/user.dart';
 import 'package:provider/provider.dart';
 
 class ListPost extends StatefulWidget {
@@ -12,7 +15,7 @@ class ListPost extends StatefulWidget {
 class _ListPostState extends State<ListPost> {
   @override
   Widget build(BuildContext context) {
-    // Access the list of posts from the inherited widget
+    // Access the list of posts from the inherited widget using Provider
     List<PostModel> posts = Provider.of<List<PostModel>>(context) ?? [];
 
     return ListView.builder(
@@ -27,4 +30,3 @@ class _ListPostState extends State<ListPost> {
     );
   }
 }
-
