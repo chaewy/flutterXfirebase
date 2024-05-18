@@ -1,13 +1,10 @@
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/models/post.dart';
 import 'package:flutter_application_1/models/user.dart';
 import 'package:flutter_application_1/pages/post/list.dart';
 import 'package:flutter_application_1/profile/profile_edit_page.dart';
-import 'package:flutter_application_1/provider.dart';
 import 'package:flutter_application_1/services/user.dart';
-import 'package:provider/provider.dart';
+
 
 class ProfilePage extends StatelessWidget {
   final UserModel user;
@@ -20,6 +17,9 @@ class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+
+//------------------------------------------------------------------------------
+
       body: StreamBuilder<UserModel>(
         stream: UserService().getUserInfo(user.uid),
         builder: (context, snapshot) {
@@ -33,6 +33,9 @@ class ProfilePage extends StatelessWidget {
             if (userProfile == null) {
               return Center(child: Text('User data is null'));
             }
+
+
+//------------------------------------------------------------------------------
 
             return DefaultTabController(
               length: 2,
@@ -106,25 +109,26 @@ class ProfilePage extends StatelessWidget {
                         ],
                       ),
                     ),
-                    // Display user posts using PostProvider
-                    Consumer<PostProvider>(
-                      builder: (context, postProvider, _) {
-                        postProvider.fetchUserPosts(user.uid); // Fetch user posts using PostProvider
-                        List<PostModel> userPosts = postProvider.postList;
 
-                        return SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (BuildContext context, int index) {
-                              if (index < userPosts.length) {
-                                return ListPost(); // Pass each post to ListPost widget
-                              }
-                              return SizedBox(); // Return a sized box for empty space
-                            },
-                            childCount: userPosts.length,
-                          ),
-                        );
-                      },
+
+//------------------------------------------------------------------------------
+
+
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          if (index == 0) {
+                            return PostListByUser(uid: user.uid);
+                          }
+                          // Add other items as needed
+                          return SizedBox.shrink(); // Placeholder for now
+                        },
+                        childCount: 2, // Number of items including the PostListByUser widget
+                      ),
                     ),
+
+//------------------------------------------------------------------------------
+
                   ],
                 ),
               ),

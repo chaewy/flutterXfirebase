@@ -13,8 +13,6 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => ThemeProvider()),
-        ChangeNotifierProvider(create: (context) => PostProvider()), // Add provider for List<PostModel>
-        
         // Add more providers as needed
       ],
       child: MyApp(),

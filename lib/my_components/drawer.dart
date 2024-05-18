@@ -8,7 +8,10 @@ import 'package:flutter_application_1/profile/profile_page.dart';
 import 'package:flutter_application_1/services/user.dart';
 
 class MyDrawer extends StatelessWidget {
-  const MyDrawer({Key? key});
+
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+  MyDrawer({Key? key});
 
   @override
   Widget build(BuildContext context) {
@@ -65,17 +68,11 @@ class MyDrawer extends StatelessWidget {
                   title: Text('P R O F I L E'),
                   onTap: () async {
                     Navigator.pop(context); // Close the drawer
-                    // Retrieve the current user from Firebase
                     UserModel currentUser = await _getCurrentUser();
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ProfilePage(user: currentUser),
-                        
-                        
-                      ),
-                    );
-                  },
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => ProfilePage(user: currentUser),
+                    ));
+                  }
                 ),
               ),
             ],

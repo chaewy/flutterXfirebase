@@ -1,17 +1,14 @@
-
-
 import 'package:flutter/material.dart';
 
 class UserTile extends StatelessWidget {
-
   final String text;
   final void Function()? onTap;
 
   const UserTile({
-    super.key,
+    Key? key, // Corrected key parameter definition
     required this.text,
     required this.onTap,
-    });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -26,13 +23,11 @@ class UserTile extends StatelessWidget {
         padding: EdgeInsets.all(20),
         child: Row(
           children: [
-            //icon
+            // Icon
             Icon(Icons.person),
-
             const SizedBox(width: 20),
-
-            //username
-            Text(text)
+            // Username
+            Text(text),
           ],
         ),
       ),
