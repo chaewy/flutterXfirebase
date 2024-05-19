@@ -9,6 +9,8 @@ class UserService {
 
   UtilsService _utilsService = UtilsService();
 
+  String? uid = FirebaseAuth.instance.currentUser?.uid;
+
   List<UserModel> _userListFromQuerySnapshot(QuerySnapshot snapshot){
     return snapshot.docs.map((doc){
       return UserModel(
@@ -74,7 +76,8 @@ Stream<List<UserModel>> queryByName(String search) {
         .map((snapshot) => _userListFromQuerySnapshot(snapshot));
 }
 
-//---------------------------------------------------------
+//---------------------------------------------------------------------------------------------------
+
 Stream<bool> isFollowing(uid, otherId){
   return FirebaseFirestore.instance
   .collection("Users")
@@ -86,6 +89,43 @@ Stream<bool> isFollowing(uid, otherId){
   return snapshot.exists;
   });
 }
+
+Future<void> followUser(uid) async {
+  await FirebaseFirestore.instance
+  .collection("Users")
+  .doc(FirebaseAuth.instance.currentUser?.uid)
+  .collection("following")
+  .doc(uid)
+  .set({});
+
+  await FirebaseFirestore.instance
+  .collection("Users")
+  .doc(uid)
+  .collection("followers")
+  .doc(FirebaseAuth.instance.currentUser?.uid)
+  .set({});
+
+}
+
+Future<void> unfollowUser(uid) async {
+  await FirebaseFirestore.instance
+  .collection("Users")
+  .doc(FirebaseAuth.instance.currentUser?.uid)
+  .collection("following")
+  .doc(uid)
+  .delete();
+
+  await FirebaseFirestore.instance
+  .collection("Users")
+  .doc(uid)
+  .collection("followers")
+  .doc(FirebaseAuth.instance.currentUser?.uid)
+  .delete();
+
+}
+
+
+//---------------------------------------------------------------------------------------------------
 
 
   // POST IMAGE TO STORAGE AND FIRESTORE

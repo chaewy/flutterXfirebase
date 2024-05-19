@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/models/post.dart';
 import 'package:flutter_application_1/services/add_post.dart';
 
+
+// display user post on profile page
 class PostListByUser extends StatelessWidget {
   final String uid;
 

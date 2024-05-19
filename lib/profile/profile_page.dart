@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/models/user.dart';
+import 'package:flutter_application_1/pages/post/follow_unfollow.dart';
 import 'package:flutter_application_1/pages/post/list.dart';
 import 'package:flutter_application_1/profile/profile_edit_page.dart';
 import 'package:flutter_application_1/services/user.dart';
@@ -16,6 +17,11 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    // to get current user logged in?
+    String? uid = FirebaseAuth.instance.currentUser?.uid; // Define the uid variabl
+    UserService _userService = UserService();
+
     return Scaffold(
 
 //------------------------------------------------------------------------------
@@ -78,6 +84,9 @@ class ProfilePage extends StatelessWidget {
                                       height: 60,
                                       width: 60,
                                     ),
+
+                                    // StreamBuilder for following status
+
                                     if (FirebaseAuth.instance.currentUser!.uid == user.uid)
                                       TextButton(
                                         onPressed: () {
@@ -88,8 +97,19 @@ class ProfilePage extends StatelessWidget {
                                         },
                                         child: Text('Edit profile'),
                                       ),
-                                  ],
-                                ),
+
+
+                                    if (FirebaseAuth.instance.currentUser?.uid != user.uid)
+                                      FollowStatusWidget(
+                                        currentUserId: FirebaseAuth.instance.currentUser!.uid,
+                                        profileUserId: user.uid,
+                                      ),
+                                  ]
+                              ),
+
+
+
+
                                 Align(
                                   alignment: Alignment.centerLeft,
                                   child: Container(
