@@ -1,17 +1,22 @@
 
 
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/pages/post/list_home.dart';
+
+
 
 class Feed extends StatefulWidget {
-  const Feed({super.key});
+  Feed({Key? key}) : super(key: key);
 
   @override
-  State<Feed> createState() => _FeedState();
+  FeedState createState() => FeedState();
 }
 
-class _FeedState extends State<Feed> {
+class FeedState extends State<Feed> {
   @override
   Widget build(BuildContext context) {
-    return Text('feed');
+    return Scaffold(
+      body: ListPost(),
+    );
   }
 }

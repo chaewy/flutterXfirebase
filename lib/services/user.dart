@@ -64,6 +64,23 @@ Stream<UserModel> getUserInfo(uid){
   .map((snapshot) => _userFromFirebaseSnapshot(snapshot));
 }
 
+
+//-----------------------------------------------------------------------------------------------------
+// for get user following to display at home page
+//  retrieves a list of user IDs that the current logged in user is following:
+
+ Future<List<String>> getUserFollowing(uid) async {
+  QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+    .collection("Users")
+    .doc(uid)
+    .collection("following")
+    .get();
+  
+  final users = querySnapshot.docs.map((doc) => doc.id).toList();
+  return users;
+ }
+
+
 //-----------------------------------------------------------------------------------------------------
 // for search 
 

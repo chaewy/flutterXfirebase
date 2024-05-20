@@ -12,4 +12,15 @@ class PostModel {
     required this.creator,
     required this.timestamp,
   });
+
+
+  // Factory constructor to create a PostModel from a Firestore document.
+  factory PostModel.fromDocument(DocumentSnapshot doc) {
+    return PostModel(
+      id: doc.id,
+      creator: doc['creator'],
+      text: doc['text'],
+      timestamp: doc['timestamp'],
+    );
+  }
 }
