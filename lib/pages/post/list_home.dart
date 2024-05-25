@@ -1,57 +1,144 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/models/post.dart';
+import 'package:flutter_application_1/models/user.dart';
 import 'package:flutter_application_1/services/add_post.dart';
-
-// for list all post at home page
-
+import 'package:flutter_application_1/services/user.dart';
 
 class ListPost extends StatelessWidget {
+  final UserService _userService = UserService();
+  final PostService _postService = PostService();
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<PostModel>>(
-      // Get the feed stream from PostService
-      stream: PostService().getFeed(),
+      stream: _postService.getFeed(),
       builder: (context, snapshot) {
-        // While the connection is still loading, show a progress indicator
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
-        }
-        // If there's an error in the stream, display an error message
-        else if (snapshot.hasError) {
-          print('Error retrieving posts: ${snapshot.error}');
-          return Center(child: Text('Error: ${snapshot.error}'));
-        }
-        // If the stream is empty or no data is found, display a message
-        else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          print('No posts found.');
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error retrieving posts: ${snapshot.error}'));
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return Center(child: Text('No posts found.'));
-        }
-        // If data is available, display the list of posts
-        else {
+        } else {
           List<PostModel> posts = snapshot.data!;
-          print('Number of posts retrieved: ${posts.length}');
-          print('Posts: $posts');
+          return ListView.builder(
+            itemCount: posts.length,
+            itemBuilder: (context, index) {
+              final post = posts[index];
 
-          // Display the posts using a ListView
-          return Container(
-            height: 300, // Set a fixed height or adjust as needed
-            child: ListView.builder(
-              itemCount: posts.length, // Number of posts
-              itemBuilder: (context, index) {
-                final post = posts[index]; // Get the post at the current index
-                print('Post at index $index: $post');
-                // Display each post using a ListTile
-                return ListTile(
-                  title: Text(post.creator), // Display the creator
-                  subtitle: Text(post.text), // Display the post text
-                );
-              },
-            ),
+              return StreamBuilder<UserModel>(
+                stream: _userService.getUserInfo(post.creator),
+                builder: (context, userSnapshot) {
+                  if (userSnapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (userSnapshot.hasError) {
+                    return ListTile(
+                      title: Text('Error loading user info'),
+                      subtitle: Text(post.text),
+                    );
+                  } else if (!userSnapshot.hasData) {
+                    return ListTile(
+                      title: Text('User not found'),
+                      subtitle: Text(post.text),
+                    );
+                  } else {
+                    final user = userSnapshot.data!;
+
+                    return StreamBuilder<bool>(
+                      stream: _postService.getCurrentUserLike(post),
+                      builder: (context, likeSnapshot) {
+                        if (likeSnapshot.connectionState == ConnectionState.waiting) {
+                          return Center(child: CircularProgressIndicator());
+                        } else if (likeSnapshot.hasError) {
+                          return ListTile(
+                            title: Text('Error loading like status'),
+                            subtitle: Text(post.text),
+                          );
+                        } else if (!likeSnapshot.hasData) {
+                          return ListTile(
+                            title: Text('Like status not found'),
+                            subtitle: Text(post.text),
+                          );
+                        } else {
+                          final isLiked = likeSnapshot.data!;
+
+                          return StreamBuilder<int>(
+                            stream: _postService.getLikeCount(post),
+                            builder: (context, likeCountSnapshot) {
+                              if (likeCountSnapshot.connectionState == ConnectionState.waiting) {
+                                return Center(child: CircularProgressIndicator());
+                              } else if (likeCountSnapshot.hasError) {
+                                return ListTile(
+                                  title: Text('Error loading like count'),
+                                  subtitle: Text(post.text),
+                                );
+                              } else {
+                                final likeCount = likeCountSnapshot.data ?? 0; // Total number of likes
+
+                                return Padding(
+                                  padding: EdgeInsets.fromLTRB(3.0, 8.0, 16.0, 0),
+                                  child: ListTile(
+                                    leading: user.profileImageUrl.isNotEmpty
+                                        ? CircleAvatar(
+                                            radius: 20,
+                                            backgroundImage: NetworkImage(user.profileImageUrl),
+                                          )
+                                        : Icon(Icons.person, size: 40),
+                                    title: Text(
+                                      user.name,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    subtitle: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        SizedBox(height: 8.0),
+                                        Text(post.text),
+                                        SizedBox(height: 8.0),
+                                        Text(
+                                          post.timestamp.toDate().toString(),
+                                          style: TextStyle(
+                                            color: Colors.grey,
+                                            fontSize: 12.0,
+                                          ),
+                                        ),
+                                        SizedBox(height: 8.0),
+                                        IconButton(
+                                          icon: Icon(
+                                            isLiked ? Icons.favorite : Icons.favorite_border,
+                                            color: isLiked ? Colors.red : Colors.blue,
+                                            size: 30.0,
+                                          ),
+                                          onPressed: () {
+                                            // Update the like status in Firestore
+                                            _postService.likePost(post, isLiked);
+
+                                            // Update the like count in Firestore
+                                            _postService.updateLikeCount(post); 
+                                          },
+                                        ),
+                                        Text('$likeCount Likes'), // Display like count
+                                      ],
+                                    ),
+                                  ),
+                                );
+
+
+                              }
+                            },
+                          );
+
+                        }
+                      },
+                    );
+                  }
+                },
+              );
+            },
           );
         }
       },
     );
   }
 }
-
-

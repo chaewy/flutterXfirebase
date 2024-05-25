@@ -5,12 +5,14 @@ class PostModel {
   final String creator;
   final String text;
   final Timestamp timestamp;
+  int likeCount; // Field to store the number of likes
 
   PostModel({
     required this.id,
     required this.text,
     required this.creator,
     required this.timestamp,
+    this.likeCount = 0, // Initialize like count to 0
   });
 
 
