@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/models/post.dart';
 import 'package:flutter_application_1/models/user.dart';
+import 'package:flutter_application_1/pages/comment_page.dart';
+import 'package:flutter_application_1/pages/post/comment.dart';
 import 'package:flutter_application_1/services/add_post.dart';
 import 'package:flutter_application_1/services/user.dart';
 
@@ -80,10 +82,10 @@ class ListPost extends StatelessWidget {
                                   child: ListTile(
                                     leading: user.profileImageUrl.isNotEmpty
                                         ? CircleAvatar(
-                                            radius: 20,
+                                            radius: 25,
                                             backgroundImage: NetworkImage(user.profileImageUrl),
                                           )
-                                        : Icon(Icons.person, size: 40),
+                                        : Icon(Icons.person, size: 50),
                                     title: Text(
                                       user.name,
                                       style: TextStyle(
@@ -93,7 +95,7 @@ class ListPost extends StatelessWidget {
                                     subtitle: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        SizedBox(height: 8.0),
+                                        SizedBox(height: 4.0),
                                         Text(post.text),
                                         SizedBox(height: 8.0),
                                         Text(
@@ -103,22 +105,49 @@ class ListPost extends StatelessWidget {
                                             fontSize: 12.0,
                                           ),
                                         ),
-                                        SizedBox(height: 8.0),
-                                        IconButton(
-                                          icon: Icon(
-                                            isLiked ? Icons.favorite : Icons.favorite_border,
-                                            color: isLiked ? Colors.red : Colors.blue,
-                                            size: 30.0,
-                                          ),
-                                          onPressed: () {
-                                            // Update the like status in Firestore
-                                            _postService.likePost(post, isLiked);
+                                        //SizedBox(height: 8.0),
+                                        Row(
+                                          children: [
+                                            // SizedBox(width: 10),
+                                            IconButton(
+                                              icon: Icon(
+                                                isLiked ? Icons.favorite : Icons.favorite_border,
+                                                color: isLiked ? Colors.red : Colors.blue,
+                                                size: 30.0,
+                                              ),
+                                              onPressed: () {
+                                                // Update the like status in Firestore
+                                                _postService.likePost(post, isLiked);
 
-                                            // Update the like count in Firestore
-                                            _postService.updateLikeCount(post); 
-                                          },
+                                                // Update the like count in Firestore
+                                                _postService.updateLikeCount(post); 
+                                              },
+                                              
+                                            ),
+
+                                            Text('$likeCount Likes'), // Display like count
+
+                                            SizedBox(width: 50),
+                                            IconButton(
+                                              icon: Icon(
+                                                Icons.chat_bubble,
+                                                color: Colors.green, // Customize the color of the comment icon
+                                                size: 30.0,
+                                              ),
+                                              onPressed: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) => Comment(post: post),
+                                                  ),
+                                                );
+                                              },
+                                            ),
+
+
+
+                                          ],
                                         ),
-                                        Text('$likeCount Likes'), // Display like count
                                       ],
                                     ),
                                   ),
