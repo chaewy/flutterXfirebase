@@ -5,7 +5,10 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/models/comment.dart';
 import 'package:flutter_application_1/models/post.dart';
+import 'package:flutter_application_1/models/user.dart';
+import 'package:flutter_application_1/pages/post/comment.dart';
 import 'package:flutter_application_1/services/user.dart';
 
 // FOR ADD POST
@@ -16,7 +19,9 @@ class PostService with ChangeNotifier{
 
   List<PostModel> get posts => _posts; // Getter for accessing the posts
 
-   final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+
+  final FirebaseAuth _auth = FirebaseAuth.instance; // Add this line
 
 List<PostModel> _postListFromSnapshot(QuerySnapshot snapshot) {
   return snapshot.docs.map((doc) {
@@ -27,6 +32,8 @@ List<PostModel> _postListFromSnapshot(QuerySnapshot snapshot) {
         text: data['text'] ?? '',
         creator: data['creator'] ?? '',
         timestamp: data['timestamp'] != null ? data['timestamp'] : Timestamp.now(),
+        ref: doc.reference,
+        
 
       );
     } else {
@@ -37,11 +44,13 @@ List<PostModel> _postListFromSnapshot(QuerySnapshot snapshot) {
         text: '',
         creator: '',
         timestamp: Timestamp.now(), // or any other default value you prefer
+        ref: doc.reference,
       );
     }
   }).toList();
 }
 
+// ------------------------------------------------------------------------------------------------
 
   Future savePost(text) async{
     await FirebaseFirestore.instance.collection("post").add({
@@ -51,6 +60,26 @@ List<PostModel> _postListFromSnapshot(QuerySnapshot snapshot) {
 
     });
   }
+
+  Future<void>comment(PostModel post, String commentText) async {
+  try {
+    print("Attempting to add comment: $commentText");
+    await FirebaseFirestore.instance
+        .collection('post')
+        .doc(post.id)
+        .collection('comments')
+        .add({
+      'text': commentText,
+      'creator': FirebaseAuth.instance.currentUser!.uid,
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+    print("Comment added successfully");
+  } catch (e) {
+    print('Error adding comment: ${e.toString()}');
+    // Handle error appropriately (display a message to the user)
+  }
+}
+
 
 // ------------------------------------------------------------------------------------------------
 
@@ -176,7 +205,53 @@ Future<void> updateLikeCount(PostModel post) async {
     });
   }
 
+// ------------------------------------------------------------------------------------------------
 
+   // Method to convert Firestore snapshot to list of CommentModel
+  List<CommentModel> _commentListFromSnapshot(QuerySnapshot snapshot) {
+    return snapshot.docs.map((doc) {
+      return CommentModel.fromDocument(doc);
+    }).toList();
+  }
+
+  // Method to get comments as a stream of List<CommentModel>
+  Stream<List<CommentModel>> getComments(PostModel post) {
+    return post.ref
+        .collection("comments")
+        .orderBy("timestamp", descending: true)
+        .snapshots()
+        .map(_commentListFromSnapshot);
+  }
+
+
+  Future<UserModel> getUserInfoOnce(String userId) async {
+  try {
+    DocumentSnapshot userDoc = await _db.collection('Users').doc(userId).get();
+    if (userDoc.exists) {
+      return UserModel.fromDocument(userDoc);
+    } else {
+      return Future.value(null); // Return null wrapped in a Future
+    }
+  } catch (e) {
+    print('Error getting user info: ${e.toString()}');
+    rethrow; 
+  }
+}
+
+  // ------------------------------------------------------------------------------------------------
+  // Delete a comment from a post
+
+  Future<void> deleteComment(DocumentReference commentRef) async {
+    try {
+      if (_auth.currentUser != null) {
+        await commentRef.delete();
+      } else {
+        print('User not authenticated');
+      }
+    } catch (e) {
+      print('Error deleting comment: ${e.toString()}');
+    }
+  }
 
 
 

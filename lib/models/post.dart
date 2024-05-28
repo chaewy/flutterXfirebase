@@ -6,6 +6,7 @@ class PostModel {
   final String text;
   final Timestamp timestamp;
   int likeCount; // Field to store the number of likes
+  DocumentReference ref;
 
   PostModel({
     required this.id,
@@ -13,6 +14,7 @@ class PostModel {
     required this.creator,
     required this.timestamp,
     this.likeCount = 0, // Initialize like count to 0
+    required this.ref,
   });
 
 
@@ -23,6 +25,8 @@ class PostModel {
       creator: doc['creator'],
       text: doc['text'],
       timestamp: doc['timestamp'],
+      ref: doc.reference,
+
     );
   }
 }
