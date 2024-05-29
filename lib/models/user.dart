@@ -6,6 +6,11 @@ class UserModel {
   final String profileImageUrl;
   final String bannerImageUrl;
   final String email;
+  final String bio;
+  final String birthday;
+  final String location;
+  final String education;
+  final String hobby;
 
   UserModel({
     required this.uid,
@@ -13,16 +18,28 @@ class UserModel {
     required this.profileImageUrl,
     required this.bannerImageUrl,
     required this.email,
+    this.bio = '',
+    this.birthday = '',
+    this.location = '',
+    this.education = '',
+    this.hobby = '',
   });
 
   // Factory constructor to create a UserModel from a DocumentSnapshot
+    
   factory UserModel.fromDocument(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
     return UserModel(
       uid: doc.id, // The document ID is likely the user's UID
-      name: doc['name'],
-      profileImageUrl: doc['profileImageUrl'],
-      bannerImageUrl: doc['bannerImageUrl'],
-      email: doc['email'],
+      name: data['name'] ?? '',
+      profileImageUrl: data['profileImageUrl'] ?? '',
+      bannerImageUrl: data['bannerImageUrl'] ?? '',
+      email: data['email'] ?? '',
+      bio: data['bio'] ?? '',
+      birthday: data['birthday'] ?? '',
+      location: data['location'] ?? '',
+      education: data['education'] ?? '',
+      hobby: data['hobby'] ?? '',
     );
   }
 }

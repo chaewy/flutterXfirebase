@@ -27,27 +27,24 @@ class UserService {
 
   // fetch data for display at profile page
 
-  UserModel _userFromFirebaseSnapshot(DocumentSnapshot snapshot) {
-  if (snapshot != null && snapshot.exists) {
-    final data = snapshot.data() as Map<String, dynamic>?; // Explicitly cast to Map<String, dynamic>
-    if (data != null) {
-      return UserModel(
-        uid: snapshot.id,
-        name: data['name'] ?? '',
-        profileImageUrl: data['profileImageUrl'] ?? '',
-        bannerImageUrl: data['bannerImageUrl'] ?? '',
-        email: data['email'] ?? '',
-      );
-    }
+ UserModel _userFromFirebaseSnapshot(DocumentSnapshot snapshot) {
+  if (snapshot.exists) {
+    final data = snapshot.data() as Map<String, dynamic>;
+    return UserModel(
+      uid: snapshot.id,
+      name: data['name'] ?? '',
+      profileImageUrl: data['profileImageUrl'] ?? '',
+      bannerImageUrl: data['bannerImageUrl'] ?? '',
+      email: data['email'] ?? '',
+      bio: data['bio'] ?? '',
+      birthday: data['birthday'] ?? '',
+      location: data['location'] ?? '',
+      education: data['education'] ?? '',
+      hobby: data['hobby'] ?? '',
+    );
+  } else {
+    throw Exception('User document does not exist');
   }
-  // Return a default UserModel object or throw an exception, depending on your requirements.
-  return UserModel(
-    uid: '',
-    name: '',
-    profileImageUrl: '',
-    bannerImageUrl: '',
-    email: '',
-  );
 }
 
 
@@ -147,57 +144,68 @@ Future<void> unfollowUser(uid) async {
 
   // POST IMAGE TO STORAGE AND FIRESTORE
 
+Future<void> updateProfile({
+  File? bannerImage,
+  File? profileImage,
+  String? name,
+  String? bio,
+  String? birthday,
+  String? location,
+  String? education,
+  String? hobby,
+}) async {
+  final userCollection = FirebaseFirestore.instance.collection("Users");
+  final currentUser = FirebaseAuth.instance.currentUser;
 
-  Future<void> updateProfile(
-    File bannerImage, File profileImage, String name) async {
-    
-    String bannerImageUrl = ''; // Initialize with default value
-    String profileImageUrl = ''; // Initialize with default value
+  DocumentSnapshot snapshot = await userCollection.doc(currentUser!.uid).get();
+  Map<String, dynamic> existingData = snapshot.data() as Map<String, dynamic>;
 
-    //all user doc
-    final userCollection = FirebaseFirestore.instance.collection("Users");
-    final currentUser = FirebaseAuth.instance.currentUser!;
+  // Pre-populate form fields with existing data if not provided
+  name ??= existingData['name'];
+  bio ??= existingData['bio'];
+  birthday ??= existingData['birthday'];
+  location ??= existingData['location'];
+  education ??= existingData['education'];
+  hobby ??= existingData['hobby'];
 
-    
+  String? bannerImageUrl;
+  String? profileImageUrl;
 
+  if (bannerImage != null) {
+    bannerImageUrl = await _utilsService.uploadFile(
+      bannerImage, 
+      'user/profile/${currentUser.uid}/banner',
+    );
+  }
 
-    if (bannerImage != null) {
+  if (profileImage != null) {
+    profileImageUrl = await _utilsService.uploadFile(
+      profileImage, 
+      'user/profile/${currentUser.uid}/profile',
+    );
+  }
 
-      // save the banner image to storage
-      bannerImageUrl = await _utilsService.uploadFile(bannerImage, 
-      'user/profile/${FirebaseAuth.instance.currentUser!.uid}/banner');
+  Map<String, dynamic> data = {
+    'name': name,
+    'bio': bio,
+    'birthday': birthday,
+    'location': location,
+    'education': education,
+    'hobby': hobby,
+  };
 
-    }
-
-    if (profileImage != null) {
-
-      // save the profile image to storage
-      profileImageUrl = await _utilsService.uploadFile(profileImage, 
-      'user/profile/${FirebaseAuth.instance.currentUser!.uid}/profile');
-
-      
-    }
-
-   // Create a map to store the updated data
-    Map<String, dynamic> data = {};
-
-    if (name.isNotEmpty) data['name'] = name;
-    if (bannerImageUrl.isNotEmpty) data['bannerImageUrl'] = bannerImageUrl;
-    if (profileImageUrl.isNotEmpty) data['profileImageUrl'] = profileImageUrl;
+  if (bannerImageUrl != null) data['bannerImageUrl'] = bannerImageUrl;
+  if (profileImageUrl != null) data['profileImageUrl'] = profileImageUrl;
 
   try {
-      // Reference the 'Users' collection and the specific document
-      DocumentReference userDocRef = userCollection.doc(currentUser.uid);
-
-      // Update the document with the new data
-      await userDocRef.update(data);
-
-      print('Profile updated successfully.');
-    } catch (e) {
-      print('Error updating profile: $e');
-    }
-
+    DocumentReference userDocRef = userCollection.doc(currentUser.uid);
+    await userDocRef.update(data);
+    print('Profile updated successfully.');
+  } catch (e) {
+    print('Error updating profile: $e');
   }
+}
+
 
   getCurrentUserSnapshot(String uid) {}
 }
