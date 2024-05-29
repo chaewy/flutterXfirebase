@@ -52,13 +52,17 @@ List<PostModel> _postListFromSnapshot(QuerySnapshot snapshot) {
 
 // ------------------------------------------------------------------------------------------------
 
-  Future savePost(text) async{
-    await FirebaseFirestore.instance.collection("post").add({
-      'text': text,
-      'creator': FirebaseAuth.instance.currentUser!.uid,
-      'timestamp': FieldValue.serverTimestamp(),
-
-    });
+   Future<void> savePost(String text, String category) async {
+    try {
+      await FirebaseFirestore.instance.collection("post").add({
+        'text': text,
+        'category': category, // Include the category field
+        'creator': FirebaseAuth.instance.currentUser!.uid,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      print('Error saving post: $e');
+    }
   }
 
   Future<void>comment(PostModel post, String commentText) async {
@@ -156,23 +160,7 @@ Future<void> updateLikeCount(PostModel post) async {
   }
 
 
-  // Future<List<PostModel>> getFeed() async{
-  //   List<String> usersFollowing = await UserService()
-  //     .getUserFollowing(FirebaseAuth.instance.currentUser?.uid);
-
-
-  //     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-  //       .collection("posts")
-  //       .where("creator", whereIn: usersFollowing)
-  //       .orderBy('timestamp', descending: true)
-  //       .get();
-
-
-  //     return _postListFromSnapshot(querySnapshot);
-
-
-  // }
-
+  
 
   // In the getFeed method:
   // We accept two optional parameters: limit to specify the maximum number of documents to fetch per page, 
@@ -252,6 +240,39 @@ Future<void> updateLikeCount(PostModel post) async {
       print('Error deleting comment: ${e.toString()}');
     }
   }
+// ------------------------------------------------------------------------------------------------
+  // save events post
+
+  Future<void> saveEventPost(String text, String category) async {
+    try {
+      await FirebaseFirestore.instance.collection("event").add({
+        'text': text,
+        'category': category, // Include the category field
+        'creator': FirebaseAuth.instance.currentUser!.uid,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      print('Error saving event post: $e');
+    }
+  }
+
+// ------------------------------------------------------------------------------------------------
+  //get save events post
+  Stream<List<PostModel>> getEventPosts() {
+  // Query the Firebase collection 'event' to get event posts
+  return FirebaseFirestore.instance
+    .collection('event')
+    .orderBy('timestamp', descending: true)
+    .snapshots()
+    .map((querySnapshot) {
+      // Map querySnapshot.docs to List<PostModel>
+      List<PostModel> eventPosts = querySnapshot.docs.map((doc) {
+        return PostModel.fromDocument(doc);
+      }).toList();
+      return eventPosts;
+    });
+}
+
 
 
 

@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/services/add_post.dart';
 
-class Add extends StatefulWidget {
-  final bool isEvent; // Add property to distinguish between home and event posts
-  const Add({Key? key, required this.isEvent}) : super(key: key);
+class AddEventPage extends StatefulWidget {
+  const AddEventPage({Key? key}) : super(key: key);
 
   @override
-  State<Add> createState() => _AddState();
+  State<AddEventPage> createState() => _AddEventPageState();
 }
 
-class _AddState extends State<Add> {
+class _AddEventPageState extends State<AddEventPage> {
   final PostService _postService = PostService();
   String text = '';
   String selectedCategory = 'Cooking'; // Default category
@@ -18,15 +17,11 @@ class _AddState extends State<Add> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.isEvent ? 'Add Event Post' : 'Add Post'), // Adjust title based on isEvent
+        title: Text('Add Event Post'),
         actions: <Widget>[
           TextButton(
             onPressed: () async {
-              if (widget.isEvent) {
-                _postService.saveEventPost(text, selectedCategory); // Pass selected category to saveEventPost
-              } else {
-                _postService.savePost(text, selectedCategory); // Pass selected category to savePost
-              }
+              _postService.saveEventPost(text, selectedCategory); // Pass selected category to saveEventPost
               Navigator.pop(context);
             },
             style: TextButton.styleFrom(
@@ -63,7 +58,7 @@ class _AddState extends State<Add> {
                 });
               },
               decoration: InputDecoration(
-                labelText: 'Enter your post',
+                labelText: 'Enter your event post',
                 border: OutlineInputBorder(),
               ),
               maxLines: null,
