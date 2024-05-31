@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/models/post.dart';
 import 'package:flutter_application_1/pages/events/list_event.dart';
 
 class EventPage extends StatefulWidget {

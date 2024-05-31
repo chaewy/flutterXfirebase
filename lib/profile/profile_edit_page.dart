@@ -17,7 +17,7 @@ class _EditState extends State<Edit> {
   File? _profileImage;
   File? _bannerImage;
   final picker = ImagePicker();
-  late UserModel _currentUser; // To hold current user data
+  UserModel? _currentUser; // To hold current user data
   late TextEditingController _nameController;
   late TextEditingController _bioController;
   late TextEditingController _birthdayController;
@@ -28,7 +28,24 @@ class _EditState extends State<Edit> {
   @override
   void initState() {
     super.initState();
+    _nameController = TextEditingController();
+    _bioController = TextEditingController();
+    _birthdayController = TextEditingController();
+    _locationController = TextEditingController();
+    _educationController = TextEditingController();
+    _hobbyController = TextEditingController();
     _fetchUserData();
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _bioController.dispose();
+    _birthdayController.dispose();
+    _locationController.dispose();
+    _educationController.dispose();
+    _hobbyController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchUserData() async {
@@ -37,12 +54,12 @@ class _EditState extends State<Edit> {
       final userSnapshot = await _userService.getUserInfo(currentUser.uid).first;
       setState(() {
         _currentUser = userSnapshot;
-        _nameController = TextEditingController(text: _currentUser.name);
-        _bioController = TextEditingController(text: _currentUser.bio);
-        _birthdayController = TextEditingController(text: _currentUser.birthday);
-        _locationController = TextEditingController(text: _currentUser.location);
-        _educationController = TextEditingController(text: _currentUser.education);
-        _hobbyController = TextEditingController(text: _currentUser.hobby);
+        _nameController.text = _currentUser!.name;
+        _bioController.text = _currentUser!.bio;
+        _birthdayController.text = _currentUser!.birthday;
+        _locationController.text = _currentUser!.location;
+        _educationController.text = _currentUser!.education;
+        _hobbyController.text = _currentUser!.hobby;
       });
     }
   }
@@ -50,11 +67,12 @@ class _EditState extends State<Edit> {
   Future<void> getImage(int type, ImageSource source) async {
     final pickedFile = await picker.pickImage(source: source);
     setState(() {
-      if (pickedFile != null && type == 0) {
-        _profileImage = File(pickedFile.path);
-      }
-      if (pickedFile != null && type == 1) {
-        _bannerImage = File(pickedFile.path);
+      if (pickedFile != null) {
+        if (type == 0) {
+          _profileImage = File(pickedFile.path);
+        } else if (type == 1) {
+          _bannerImage = File(pickedFile.path);
+        }
       }
     });
   }
@@ -90,6 +108,7 @@ class _EditState extends State<Edit> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        title: Text('Edit Profile'),
         actions: [
           TextButton(
             onPressed: () async {
@@ -105,59 +124,59 @@ class _EditState extends State<Edit> {
               );
               Navigator.pop(context);
             },
-            child: Text('Save'),
+            child: Text('Save', style: TextStyle(color: Colors.white)),
           )
         ],
       ),
-      body: Container(
-        padding: EdgeInsets.symmetric(vertical: 20, horizontal: 50),
-        child: ListView(
-          children: [
-            TextButton(
-              onPressed: () => _showImageSourceDialog(0),
-              child: _profileImage == null 
-                ? _currentUser.profileImageUrl.isNotEmpty
-                  ? Image.network(_currentUser.profileImageUrl, height: 100)
-                  : Icon(Icons.person)
-                : Image.file(_profileImage!, height: 100),
-            ),
-            TextButton(
-              onPressed: () => _showImageSourceDialog(1),
-              child: _bannerImage == null 
-                ? _currentUser.bannerImageUrl.isNotEmpty
-                  ? Image.network(_currentUser.bannerImageUrl, height: 100)
-                  : Icon(Icons.person)
-                : Image.file(_bannerImage!, height: 100),
-            ),
-            TextFormField(
-              controller: _nameController,
-              decoration: InputDecoration(labelText: 'Name'),
-            ),
-            TextFormField(
-              controller: _bioController,
-              decoration: InputDecoration(labelText: 'Bio'),
-            ),
-            TextFormField(
-              controller: _birthdayController,
-              decoration: InputDecoration(labelText: 'Birthday'),
-            ),
-            TextFormField(
-              controller: _locationController,
-              decoration: InputDecoration(
-                labelText: 'Location',
+      body: _currentUser == null
+          ? Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: EdgeInsets.symmetric(vertical: 20, horizontal: 50),
+              child: ListView(
+                children: [
+                  TextButton(
+                    onPressed: () => _showImageSourceDialog(0),
+                    child: _profileImage == null 
+                      ? _currentUser!.profileImageUrl.isNotEmpty
+                        ? Image.network(_currentUser!.profileImageUrl, height: 100)
+                        : Icon(Icons.person, size: 100)
+                      : Image.file(_profileImage!, height: 100),
+                  ),
+                  TextButton(
+                    onPressed: () => _showImageSourceDialog(1),
+                    child: _bannerImage == null 
+                      ? _currentUser!.bannerImageUrl.isNotEmpty
+                        ? Image.network(_currentUser!.bannerImageUrl, height: 100)
+                        : Icon(Icons.image, size: 100)
+                      : Image.file(_bannerImage!, height: 100),
+                  ),
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: InputDecoration(labelText: 'Name'),
+                  ),
+                  TextFormField(
+                    controller: _bioController,
+                    decoration: InputDecoration(labelText: 'Bio'),
+                  ),
+                  TextFormField(
+                    controller: _birthdayController,
+                    decoration: InputDecoration(labelText: 'Birthday'),
+                  ),
+                  TextFormField(
+                    controller: _locationController,
+                    decoration: InputDecoration(labelText: 'Location'),
+                  ),
+                  TextFormField(
+                    controller: _educationController,
+                    decoration: InputDecoration(labelText: 'Education'),
+                  ),
+                  TextFormField(
+                    controller: _hobbyController,
+                    decoration: InputDecoration(labelText: 'Hobby'),
+                  ),
+                ],
               ),
             ),
-            TextFormField(
-              controller: _educationController,
-              decoration: InputDecoration(labelText: 'Education'),
-            ),
-            TextFormField(
-              controller: _hobbyController,
-              decoration: InputDecoration(labelText: 'Hobby'),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

@@ -1,32 +1,42 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/services/add_post.dart';
 
-class Add extends StatefulWidget {
-  final bool isEvent; // Add property to distinguish between home and event posts
-  const Add({Key? key, required this.isEvent}) : super(key: key);
+class AddHomePage extends StatefulWidget {
+  final String text;
+  final String selectedCategory;
+
+  const AddHomePage({
+    Key? key, 
+    required this.text, 
+    required this.selectedCategory
+    }) : super(key: key);
 
   @override
-  State<Add> createState() => _AddState();
+  State<AddHomePage> createState() => _AddHomePageState();
 }
 
-class _AddState extends State<Add> {
+class _AddHomePageState extends State<AddHomePage> {
   final PostService _postService = PostService();
   String text = '';
   String selectedCategory = 'Cooking'; // Default category
 
   @override
+  void initState() {
+    super.initState();
+    text = widget.text;
+    selectedCategory = widget.selectedCategory;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.isEvent ? 'Add Event Post' : 'Add Post'), // Adjust title based on isEvent
+        title: Text('Add Home Post'),
         actions: <Widget>[
           TextButton(
             onPressed: () async {
-              if (widget.isEvent) {
-                _postService.saveEventPost(text, selectedCategory); // Pass selected category to saveEventPost
-              } else {
-                _postService.savePost(text, selectedCategory); // Pass selected category to savePost
-              }
+              _postService.savePost(text, selectedCategory);
               Navigator.pop(context);
             },
             style: TextButton.styleFrom(

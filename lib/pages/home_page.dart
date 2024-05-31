@@ -7,7 +7,7 @@ import 'package:flutter_application_1/home/search.dart';
 import 'package:flutter_application_1/my_components/drawer.dart';
 import 'package:flutter_application_1/pages/events/addEvent_page.dart';
 import 'package:flutter_application_1/pages/events/event_page.dart';
-import 'package:flutter_application_1/pages/post/add_post_page.dart';
+import 'package:flutter_application_1/pages/post/add_post.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);

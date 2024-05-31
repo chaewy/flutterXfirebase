@@ -1,11 +1,14 @@
 
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/models/comment.dart';
+import 'package:flutter_application_1/models/event.dart';
 import 'package:flutter_application_1/models/post.dart';
 import 'package:flutter_application_1/models/user.dart';
 import 'package:flutter_application_1/pages/post/comment.dart';
@@ -243,38 +246,50 @@ Future<void> updateLikeCount(PostModel post) async {
 // ------------------------------------------------------------------------------------------------
   // save events post
 
-  Future<void> saveEventPost(String text, String category) async {
+ Future<void> saveEventPost({
+    required String title,
+    required String description,
+    required String category,
+    required String state,
+    required String city,
+    required File image,
+  }) async {
     try {
+      // Upload image to Firebase Storage
+      final storageRef = FirebaseStorage.instance.ref().child('event_images/${DateTime.now().toIso8601String()}');
+      await storageRef.putFile(image);
+      final imageUrl = await storageRef.getDownloadURL();
+
+      // Save event data to Firestore
       await FirebaseFirestore.instance.collection("event").add({
-        'text': text,
-        'category': category, // Include the category field
+        'title': title,
+        'description': description,
+        'category': category,
+        'state': state,
+        'city': city,
+        'imageUrl': imageUrl,
         'creator': FirebaseAuth.instance.currentUser!.uid,
         'timestamp': FieldValue.serverTimestamp(),
       });
     } catch (e) {
       print('Error saving event post: $e');
+      // You can handle errors here, such as showing an error message to the user
     }
   }
 
 // ------------------------------------------------------------------------------------------------
   //get save events post
-  Stream<List<PostModel>> getEventPosts() {
-  // Query the Firebase collection 'event' to get event posts
-  return FirebaseFirestore.instance
-    .collection('event')
-    .orderBy('timestamp', descending: true)
-    .snapshots()
-    .map((querySnapshot) {
-      // Map querySnapshot.docs to List<PostModel>
-      List<PostModel> eventPosts = querySnapshot.docs.map((doc) {
-        return PostModel.fromDocument(doc);
+  Stream<List<EventModel>> getEventPosts() {
+    return FirebaseFirestore.instance
+        .collection('event')
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((querySnapshot) {
+      return querySnapshot.docs.map((doc) {
+        return EventModel.fromDocument(doc);
       }).toList();
-      return eventPosts;
     });
-}
-
-
-
+  }
 
 
 }
