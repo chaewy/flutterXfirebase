@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/models/comment.dart';
 import 'package:flutter_application_1/models/post.dart';
 import 'package:flutter_application_1/models/user.dart';
+import 'package:flutter_application_1/pages/post/FullImage_page.dart';
 import 'package:flutter_application_1/services/add_post.dart';
 import 'package:flutter_application_1/services/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -57,34 +58,90 @@ class _CommentState extends State<CommentPage> {
       ),
       body: user != null
           ? Padding(
-              padding: EdgeInsets.fromLTRB(3.0, 8.0, 16.0, 0),
+              padding: EdgeInsets.all(16.0),
               child: SingleChildScrollView(
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    ListTile(
-                      leading: user!.profileImageUrl.isNotEmpty
-                          ? CircleAvatar(
-                              radius: 30,
-                              backgroundImage:
-                                  NetworkImage(user!.profileImageUrl),
-                            )
-                          : Icon(Icons.person, size: 60),
-                      title: Text(
-                        user!.name,
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                    Row(
+                      children: [
+                        user!.profileImageUrl.isNotEmpty
+                            ? CircleAvatar(
+                                radius: 20,
+                                backgroundImage:
+                                    NetworkImage(user!.profileImageUrl),
+                              )
+                            : Icon(Icons.person, size: 60),
+                        SizedBox(width: 10),
+                        Text(
+                          user!.name,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 16.0),
+                    Text(
+                      post.title,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
                       ),
-                      subtitle: Column(
+                    ),
+                    SizedBox(height: 8.0),
+
+
+                    if (post.imageUrls.isNotEmpty)
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(height: 8.0),
-                          Text(post.text),
-                          SizedBox(height: 8.0),
-                          Text(
-                            post.timestamp.toDate().toString(),
-                            style:
-                                TextStyle(color: Colors.grey, fontSize: 12.0),
+                          Wrap(
+                            spacing: 8.0,
+                            runSpacing: 8.0,
+                            children: post.imageUrls.map((imageUrl) {
+                              return GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => FullImagePage(imageUrl: imageUrl),
+                                    ),
+                                  );
+                                },
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                  child: Image.network(
+                                    imageUrl,
+                                    width: 100,
+                                    height: 100,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
                           ),
                         ],
+                      ),
+
+
+
+
+                    SizedBox(height: 8.0),
+                    Text(
+                      post.description,
+                      style: TextStyle(
+                        fontSize: 16,
+                      ),
+                    ),
+                    SizedBox(height: 8.0),
+                    Text(
+                      post.timestamp.toDate().toString(),
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 12.0,
                       ),
                     ),
                     StreamBuilder<bool>(
@@ -96,12 +153,12 @@ class _CommentState extends State<CommentPage> {
                         } else if (likeSnapshot.hasError) {
                           return ListTile(
                             title: Text('Error loading like status'),
-                            subtitle: Text(post.text),
+                            subtitle: Text(post.title),
                           );
                         } else if (!likeSnapshot.hasData) {
                           return ListTile(
                             title: Text('Like status not found'),
-                            subtitle: Text(post.text),
+                            subtitle: Text(post.title),
                           );
                         } else {
                           final isLiked = likeSnapshot.data!;
@@ -115,7 +172,7 @@ class _CommentState extends State<CommentPage> {
                               } else if (likeCountSnapshot.hasError) {
                                 return ListTile(
                                   title: Text('Error loading like count'),
-                                  subtitle: Text(post.text),
+                                  subtitle: Text(post.title),
                                 );
                               } else {
                                 final likeCount =
@@ -171,6 +228,10 @@ class _CommentState extends State<CommentPage> {
                                               decoration: InputDecoration(
                                                 hintText:
                                                     'Write a comment...',
+                                                border: OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8.0),
+                                                ),
                                               ),
                                               onChanged: (val) {
                                                 // Update the comment text when typing
@@ -232,6 +293,7 @@ class _CommentState extends State<CommentPage> {
                                           List<CommentModel> comments = snapshot.data ?? [];
                                           return ListView.builder(
                                             shrinkWrap: true,
+                                            physics: NeverScrollableScrollPhysics(),
                                             itemCount: comments.length,
                                             itemBuilder: (context, index) {
                                               CommentModel comment = comments[index];
@@ -273,13 +335,7 @@ class _CommentState extends State<CommentPage> {
                                           );
                                         }
                                       },
-                                    )
-
-
-
-
-
-
+                                    ),
                                   ],
                                 );
                               }

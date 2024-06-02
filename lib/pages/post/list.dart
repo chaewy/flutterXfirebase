@@ -39,7 +39,7 @@ class PostListByUser extends StatelessWidget {
                 print('Post at index $index: $post');
                 return ListTile(
                   title: Text(post.creator),
-                  subtitle: Text(post.text),
+                  subtitle: Text(post.title),
                 );
               },
             ),

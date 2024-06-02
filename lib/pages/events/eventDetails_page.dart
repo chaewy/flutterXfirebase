@@ -68,7 +68,7 @@ class EventDetails extends StatelessWidget {
                     ),
                     SizedBox(height: 8),
                     Text(
-                      'Location: ${event.state}, ${event.district}, ${event.city}',
+                      'Location: ${event.state}, ${event.city}',
                       style: TextStyle(fontSize: 16),
                     ),
                     SizedBox(height: 8),

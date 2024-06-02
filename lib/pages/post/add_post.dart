@@ -24,7 +24,6 @@ class _AddState extends State<Add> {
       );
     } else {
       return AddHomePage(
-        text: '',
         selectedCategory: 'Cooking',
       );
     }

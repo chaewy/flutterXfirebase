@@ -7,7 +7,6 @@ class EventModel {
   final String description;
   final String category;
   final String state;
-  final String district;
   final String city;
   final String imageUrl;
   final String creator;
@@ -19,7 +18,6 @@ class EventModel {
     required this.description,
     required this.category,
     required this.state,
-    required this.district,
     required this.city,
     required this.imageUrl,
     required this.creator,
@@ -34,7 +32,6 @@ class EventModel {
       description: data['description'],
       category: data['category'],
       state: data['state'],
-      district: data['district'],
       city: data['city'],
       imageUrl: data['imageUrl'],
       creator: data['creator'],
@@ -48,7 +45,6 @@ class EventModel {
       'description': description,
       'category': category,
       'state': state,
-      'district': district,
       'city': city,
       'imageUrl': imageUrl,
       'creator': creator,

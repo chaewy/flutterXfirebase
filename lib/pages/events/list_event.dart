@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/models/event.dart';
 import 'package:flutter_application_1/models/user.dart';
 import 'package:flutter_application_1/pages/events/eventDetails_page.dart';
+import 'package:flutter_application_1/profile/profile_page.dart';
 import 'package:flutter_application_1/services/add_post.dart';
 import 'package:flutter_application_1/services/user.dart';
 
@@ -61,9 +62,19 @@ class ListEvent extends StatelessWidget {
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      CircleAvatar(
-                                        backgroundImage: NetworkImage(user.profileImageUrl),
-                                        radius: 20, // Adjust the radius of the profile image
+                                      GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => ProfilePage(user: user),
+                                            ),
+                                          );
+                                        },
+                                        child: CircleAvatar(
+                                          backgroundImage: NetworkImage(user.profileImageUrl),
+                                          radius: 20, // Adjust the radius of the profile image
+                                        ),
                                       ),
                                       SizedBox(width: 8),
                                       Expanded(
@@ -82,7 +93,7 @@ class ListEvent extends StatelessWidget {
                                                     Icon(Icons.location_on, size: 16),
                                                     SizedBox(width: 4),
                                                     Text(
-                                                      "${eventPost.state}, ${eventPost.district}, ${eventPost.city}",
+                                                      "${eventPost.state}, ${eventPost.city}",
                                                       style: TextStyle(color: Colors.grey),
                                                     ),
                                                   ],
@@ -93,6 +104,7 @@ class ListEvent extends StatelessWidget {
                                         ),
                                       ),
                                     ],
+
                                   ),
                                 ),
                                 if (eventPost.imageUrl.isNotEmpty)

@@ -30,22 +30,27 @@ List<PostModel> _postListFromSnapshot(QuerySnapshot snapshot) {
   return snapshot.docs.map((doc) {
     final data = doc.data() as Map<String, dynamic>?; // Explicitly cast to Map<String, dynamic>
     if (data != null) {
+      // Parse imageUrls as List<String>
+      List<String> imageUrls = (data['imageUrls'] as List<dynamic>).cast<String>();
+      
       return PostModel(
         id: doc.id,
-        text: data['text'] ?? '',
         creator: data['creator'] ?? '',
+        title: data['title'] ?? '',
+        imageUrls: imageUrls, // Assign parsed list of strings to imageUrls
+        description: data['description'] ?? '',
         timestamp: data['timestamp'] != null ? data['timestamp'] : Timestamp.now(),
         ref: doc.reference,
-        
-
       );
     } else {
       // Handle the case where data is null
       // You might want to throw an error, return a default value, or handle it based on your application logic.
       return PostModel(
         id: doc.id,
-        text: '',
         creator: '',
+        title: '',
+        imageUrls: [],
+        description: '',
         timestamp: Timestamp.now(), // or any other default value you prefer
         ref: doc.reference,
       );
@@ -53,20 +58,35 @@ List<PostModel> _postListFromSnapshot(QuerySnapshot snapshot) {
   }).toList();
 }
 
-// ------------------------------------------------------------------------------------------------
 
-   Future<void> savePost(String text, String category) async {
-    try {
-      await FirebaseFirestore.instance.collection("post").add({
-        'text': text,
-        'category': category, // Include the category field
-        'creator': FirebaseAuth.instance.currentUser!.uid,
-        'timestamp': FieldValue.serverTimestamp(),
-      });
-    } catch (e) {
-      print('Error saving post: $e');
+// ------------------------------------------------------------------------------------------------
+// save post
+  Future<void> savePost(String title, String description, List<File> images, String category) async {
+  try {
+    List<String> imageUrls = [];
+
+    for (File image in images) {
+      final storageRef = FirebaseStorage.instance.ref().child('post_images/${DateTime.now().toIso8601String()}');
+      await storageRef.putFile(image);
+      final imageUrl = await storageRef.getDownloadURL();
+      imageUrls.add(imageUrl);
     }
+
+    await FirebaseFirestore.instance.collection("post").add({
+      'title': title,
+      'description': description,
+      'imageUrls': imageUrls, // Use 'imageUrls' instead of 'imageUrl'
+      'category': category, 
+      'creator': FirebaseAuth.instance.currentUser!.uid,
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+  } catch (e) {
+    print('Error saving post: $e');
   }
+}
+
+
+
 
   Future<void>comment(PostModel post, String commentText) async {
   try {
