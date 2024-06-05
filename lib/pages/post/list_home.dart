@@ -13,32 +13,57 @@ class ListPost extends StatelessWidget {
 
   // Display images using a Wrap widget
   Widget _buildImages(BuildContext context, List<String> imageUrls) {
-    return Wrap(
-      spacing: 8.0,
-      runSpacing: 8.0,
-      children: imageUrls.map((imageUrl) {
+  if (imageUrls.length == 1) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => FullImagePage(imageUrl: imageUrls.first),
+          ),
+        );
+      },
+      child: Center(
+        child: Image.network(
+          imageUrls.first,
+          fit: BoxFit.cover,
+          height: MediaQuery.of(context).size.height * 0.3, // Adjust the height as needed
+        ),
+      ),
+    );
+  } else {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 8.0,
+        mainAxisSpacing: 8.0,
+      ),
+      itemCount: imageUrls.length,
+      itemBuilder: (context, index) {
         return GestureDetector(
           onTap: () {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => FullImagePage(imageUrl: imageUrl),
+                builder: (context) => FullImagePage(imageUrl: imageUrls[index]),
               ),
             );
           },
           child: ClipRRect(
             borderRadius: BorderRadius.circular(8.0),
             child: Image.network(
-              imageUrl,
-              width: 100,
-              height: 100,
+              imageUrls[index],
               fit: BoxFit.cover,
             ),
           ),
         );
-      }).toList(),
+      },
     );
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -116,38 +141,62 @@ class ListPost extends StatelessWidget {
                                         //-------------------
                                         children: [
                                           GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => ProfilePage(user: user),
-                                            ),
-                                          );
-                                        },
-                                        child: CircleAvatar(
-                                          backgroundImage: NetworkImage(user.profileImageUrl),
-                                          radius: 20, // Adjust the radius of the profile image
-                                        ),
-                                      ),
-                                          SizedBox(width: 10),
-                                          Text(
-                                            user.name,
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 15,
+                                            onTap: () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) => ProfilePage(user: user),
+                                                ),
+                                              );
+                                            },
+                                            child: Row(
+                                              children: [
+                                                CircleAvatar(
+                                                  backgroundImage: NetworkImage(user.profileImageUrl),
+                                                  radius: 20, // Adjust the radius of the profile image
+                                                ),
+                                                SizedBox(width: 10),
+                                                GestureDetector(
+                                                  onTap: () {
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (context) => ProfilePage(user: user),
+                                                      ),
+                                                    );
+                                                  },
+                                                  child: Text(
+                                                    user.name,
+                                                    style: TextStyle(
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 15,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           ),
                                         ],
                                       ),
                                       SizedBox(height: 8.0),
-                                      // Display title
-                                      Text(
-                                        post.title,
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 18,
+                                      // Display title with GestureDetector for navigation
+                                        GestureDetector(
+                                          onTap: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) => CommentPage(post: post),
+                                              ),
+                                            );
+                                          },
+                                          child: Text(
+                                            post.title,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 18,
+                                            ),
+                                          ),
                                         ),
-                                      ),
                                       SizedBox(height: 8.0),
                                       // Display images
                                       _buildImages(context, post.imageUrls),

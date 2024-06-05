@@ -52,93 +52,81 @@ class ProfilePage extends StatelessWidget {
                     ),
                   ];
                 },
-                body: CustomScrollView(
-                  slivers: [
-                    SliverList(
-                      delegate: SliverChildListDelegate(
-                        [
-                          Container(
-                            padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-                            child: Column(
+                body: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        image: DecorationImage(
-                                          image: NetworkImage(userProfile.profileImageUrl),
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                      height: 60,
-                                      width: 60,
+                                Container(
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    image: DecorationImage(
+                                      image: NetworkImage(userProfile.profileImageUrl),
+                                      fit: BoxFit.cover,
                                     ),
-                                    if (FirebaseAuth.instance.currentUser!.uid == user.uid)
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(builder: (context) => Edit()),
-                                          );
-                                        },
-                                        child: Text('Edit profile'),
-                                      ),
-                                    if (FirebaseAuth.instance.currentUser?.uid != user.uid)
-                                      FollowStatusWidget(
-                                        currentUserId: FirebaseAuth.instance.currentUser!.uid,
-                                        profileUserId: user.uid,
-                                      ),
-                                  ],
-                                ),
-                                Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Container(
-                                    padding: EdgeInsets.symmetric(vertical: 10),
-                                    child: Row(
-                                      children: [
-                                        Text(
-                                          userProfile.name,
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 20,
-                                          ),
-                                        ),
-                                        SizedBox(width: 10),
-                                        Icon(Icons.location_on), // Icon added here
-                                        SizedBox(width: 5), // Adjust spacing between icon and text
-                                        Text(
-                                          userProfile.location,
-                                          style: TextStyle(
-                                            color: Colors.grey,
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-
                                   ),
+                                  height: 60,
+                                  width: 60,
                                 ),
-                                _ExpandableDetails(userProfile: userProfile),
+                                if (FirebaseAuth.instance.currentUser!.uid == user.uid)
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(builder: (context) => Edit()),
+                                      );
+                                    },
+                                    child: Text('Edit profile'),
+                                  ),
+                                if (FirebaseAuth.instance.currentUser?.uid != user.uid)
+                                  FollowStatusWidget(
+                                    currentUserId: FirebaseAuth.instance.currentUser!.uid,
+                                    profileUserId: user.uid,
+                                  ),
                               ],
                             ),
-                          ),
-                        ],
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Container(
+                                padding: EdgeInsets.symmetric(vertical: 10),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      userProfile.name,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 20,
+                                      ),
+                                    ),
+                                    SizedBox(width: 10),
+                                    Icon(Icons.location_on),
+                                    SizedBox(width: 5),
+                                    Text(
+                                      userProfile.location,
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            _ExpandableDetails(userProfile: userProfile),
+                          ],
+                        ),
                       ),
-                    ),
-                    SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          if (index == 0) {
-                            return PostListByUser(uid: user.uid);
-                          }
-                          return SizedBox.shrink();
-                        },
-                        childCount: 2,
+                      Container(
+                        height: MediaQuery.of(context).size.height * 0.6,
+                        child: PostListByUser(uid: user.uid),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             );
@@ -165,13 +153,13 @@ class _ExpandableDetailsState extends State<_ExpandableDetails> {
   Widget build(BuildContext context) {
     return Container(
       alignment: Alignment.centerLeft,
-      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+      padding: EdgeInsets.symmetric(vertical: 0, horizontal: 0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start, // Adjusted crossAxisAlignment
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (_expanded)
             Column(
-              crossAxisAlignment: CrossAxisAlignment.start, // Adjusted crossAxisAlignment
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Bio: ${widget.userProfile.bio}',
@@ -191,6 +179,7 @@ class _ExpandableDetailsState extends State<_ExpandableDetails> {
                 ),
               ],
             ),
+          if (!_expanded) Container(),
           TextButton(
             onPressed: () {
               setState(() {
@@ -204,5 +193,3 @@ class _ExpandableDetailsState extends State<_ExpandableDetails> {
     );
   }
 }
-
-

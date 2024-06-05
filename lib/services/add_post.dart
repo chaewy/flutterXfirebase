@@ -11,6 +11,7 @@ import 'package:flutter_application_1/models/comment.dart';
 import 'package:flutter_application_1/models/event.dart';
 import 'package:flutter_application_1/models/post.dart';
 import 'package:flutter_application_1/models/user.dart';
+import 'package:flutter_application_1/pages/events/eventDetails_page.dart';
 import 'package:flutter_application_1/pages/post/comment.dart';
 import 'package:flutter_application_1/services/user.dart';
 
@@ -25,6 +26,8 @@ class PostService with ChangeNotifier{
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   final FirebaseAuth _auth = FirebaseAuth.instance; // Add this line
+
+  String userId = FirebaseAuth.instance.currentUser!.uid;
 
 List<PostModel> _postListFromSnapshot(QuerySnapshot snapshot) {
   return snapshot.docs.map((doc) {
@@ -85,7 +88,8 @@ List<PostModel> _postListFromSnapshot(QuerySnapshot snapshot) {
   }
 }
 
-
+// ------------------------------------------------------------------------------------------------
+//                             Comment
 
 
   Future<void>comment(PostModel post, String commentText) async {
@@ -109,6 +113,7 @@ List<PostModel> _postListFromSnapshot(QuerySnapshot snapshot) {
 
 
 // ------------------------------------------------------------------------------------------------
+//                             LIKE
 
   Stream<bool> getCurrentUserLike(PostModel post){
     return FirebaseFirestore.instance
@@ -182,18 +187,7 @@ Future<void> updateLikeCount(PostModel post) async {
     .map(_postListFromSnapshot);
   }
 
-
-  
-
-  // In the getFeed method:
-  // We accept two optional parameters: limit to specify the maximum number of documents to fetch per page, 
-  // and startAfterDocument to specify the document from which to start fetching the next page of documents.
-  // We create a Query to retrieve documents from the Firestore collection 'post', ordered by 'timestamp' in descending order, 
-  // and limited by the specified limit.
-  // If startAfterDocument is provided, we use the startAfterDocument method on the query to start fetching documents after the specified document.
-  // We then return a stream of List<PostModel> where each element represents a page of posts.
-  // With this implementation, the getFeed method now supports pagination by allowing you to specify the limit and startAfterDocument parameters.
-  //  This enables you to fetch posts in pages, improving performance and providing a better user experience when displaying large datasets
+//---------------------------------------------------------------------------------------------------------------
 
   // This method returns a stream of List<PostModel> which contains the posts from Firestore.
   Stream<List<PostModel>> getFeed({int limit = 10, DocumentSnapshot? startAfterDocument}) {
@@ -310,6 +304,59 @@ Future<void> updateLikeCount(PostModel post) async {
       }).toList();
     });
   }
+
+  //------------------------------------------------------------------------------------
+
+  //                           EVENT
+
+  // Add the following method to the PostService class
+
+  Future<bool> joinEvent(EventModel event) async {
+    try {
+      String userId = FirebaseAuth.instance.currentUser!.uid;
+
+      DocumentSnapshot participantDoc = await FirebaseFirestore.instance
+          .collection('event')
+          .doc(event.id)
+          .collection('participants')
+          .doc(userId)
+          .get();
+
+      if (participantDoc.exists) {
+        return true; // User has already joined the event
+      } else {
+        await FirebaseFirestore.instance
+            .collection('event')
+            .doc(event.id)
+            .collection('participants')
+            .doc(userId)
+            .set({
+              'userId': userId,
+              'joinedAt': FieldValue.serverTimestamp(),
+            });
+        return false; // User successfully joined the event
+      }
+    } catch (e) {
+      print('Error joining event: $e');
+      return false; // Return false if an error occurs
+    }
+  }
+
+   Future<void> leaveEvent(EventModel event, String userId) async {
+    try {
+      DocumentReference participantDoc = _db
+          .collection('event')
+          .doc(event.id)
+          .collection('participants')
+          .doc(userId);
+      await participantDoc.delete();
+    } catch (e) {
+      print('Error leaving event: $e');
+    }
+  }
+
+  
+
 
 
 }

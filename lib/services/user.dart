@@ -11,6 +11,8 @@ class UserService {
 
   String? uid = FirebaseAuth.instance.currentUser?.uid;
 
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   List<UserModel> _userListFromQuerySnapshot(QuerySnapshot snapshot){
     return snapshot.docs.map((doc){
       return UserModel(
@@ -140,9 +142,7 @@ Future<void> unfollowUser(uid) async {
 
 
 //---------------------------------------------------------------------------------------------------
-
-
-  // POST IMAGE TO STORAGE AND FIRESTORE
+// POST IMAGE TO STORAGE AND FIRESTORE
 
 Future<void> updateProfile({
   File? bannerImage,
@@ -205,7 +205,38 @@ Future<void> updateProfile({
     print('Error updating profile: $e');
   }
 }
-
-
   getCurrentUserSnapshot(String uid) {}
+
+
+  // ------------------------------------------------------------------
+  Future<List<UserModel>> getEventParticipants(String eventId) async {
+    List<UserModel> participants = [];
+
+    try {
+      QuerySnapshot<Map<String, dynamic>> querySnapshot = await _firestore
+          .collection('event')
+          .doc(eventId)
+          .collection('participants')
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        for (DocumentSnapshot doc in querySnapshot.docs) {
+          DocumentSnapshot<Map<String, dynamic>> userDoc = await _firestore
+              .collection('Users')
+              .doc(doc.id)
+              .get();
+
+          if (userDoc.exists) {
+            participants.add(UserModel.fromDocument(userDoc));
+          }
+        }
+      }
+
+      return participants;
+    } catch (e) {
+      // Handle any potential errors
+      print('Error fetching event participants: $e');
+      return [];
+    }
+  }
 }
