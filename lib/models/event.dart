@@ -6,19 +6,24 @@ class EventModel {
   final String title;
   final String description;
   final String category;
+  final String streetName;
+  final String town;
+  final String region;
   final String state;
-  final String city;
   final String imageUrl;
   final String creator;
   final Timestamp timestamp;
+  //streetName , town, region and state 
 
   EventModel({
     required this.id,
     required this.title,
     required this.description,
     required this.category,
+    required this.streetName,
+    required this.town,
+    required this.region,
     required this.state,
-    required this.city,
     required this.imageUrl,
     required this.creator,
     required this.timestamp,
@@ -31,8 +36,10 @@ class EventModel {
       title: data['title'],
       description: data['description'],
       category: data['category'],
+      streetName: data['streetName'],
+      town: data['town'],
+      region: data['region'],
       state: data['state'],
-      city: data['city'],
       imageUrl: data['imageUrl'],
       creator: data['creator'],
       timestamp: data['timestamp'],
@@ -44,8 +51,10 @@ class EventModel {
       'title': title,
       'description': description,
       'category': category,
+      'streetName': streetName,
+      'town': town,
+      'region': region,
       'state': state,
-      'city': city,
       'imageUrl': imageUrl,
       'creator': creator,
       'timestamp': timestamp,

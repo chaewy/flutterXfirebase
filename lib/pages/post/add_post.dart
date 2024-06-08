@@ -19,8 +19,11 @@ class _AddState extends State<Add> {
         title: '',
         description: '',
         category: 'Cooking',
+        streetName: '',
+        town: '',
+        region: '',
         state: '',
-        city: '',
+        //streetName , town, region and state 
       );
     } else {
       return AddHomePage(

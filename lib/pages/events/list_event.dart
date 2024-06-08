@@ -83,23 +83,39 @@ class ListEvent extends StatelessWidget {
                                           children: [
                                             Row(
                                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
                                               children: [
-                                                Text(
-                                                  eventPost.title,
-                                                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                                                ),
-                                                Row(
-                                                  children: [
-                                                    Icon(Icons.location_on, size: 16),
-                                                    SizedBox(width: 4),
-                                                    Text(
-                                                      "${eventPost.state}, ${eventPost.city}",
-                                                      style: TextStyle(color: Colors.grey),
-                                                    ),
-                                                  ],
+                                                Expanded( // Wrap with Expanded
+                                                  child: Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Text(
+                                                        eventPost.title,
+                                                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                                      ),
+                                                      SizedBox(height: 4),
+                                                      Row(
+                                                        children: [
+                                                          Icon(Icons.location_on, size: 16),
+                                                          SizedBox(width: 4),
+                                                          Expanded( // Wrap with Expanded
+                                                            child: Text(
+                                                              "${eventPost.streetName}, ${eventPost.town}, ${eventPost.region}, ${eventPost.state}",
+                                                              style: TextStyle(color: Colors.grey),
+                                                              overflow: TextOverflow.ellipsis,
+                                                              maxLines: 1,
+                                                            ),
+
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ),
                                               ],
                                             ),
+
+
                                           ],
                                         ),
                                       ),

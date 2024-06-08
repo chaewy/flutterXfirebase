@@ -264,9 +264,12 @@ Future<void> updateLikeCount(PostModel post) async {
     required String title,
     required String description,
     required String category,
+    required String streetName,
+    required String town,
+    required String region,
     required String state,
-    required String city,
     required File image,
+    //streetName , town, region and state 
   }) async {
     try {
       // Upload image to Firebase Storage
@@ -279,8 +282,10 @@ Future<void> updateLikeCount(PostModel post) async {
         'title': title,
         'description': description,
         'category': category,
+        'streetName': streetName,
+        'town': town,
+        'region': region,
         'state': state,
-        'city': city,
         'imageUrl': imageUrl,
         'creator': FirebaseAuth.instance.currentUser!.uid,
         'timestamp': FieldValue.serverTimestamp(),

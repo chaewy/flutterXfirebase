@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/pages/map_search.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_application_1/services/add_post.dart';
 
@@ -7,16 +8,21 @@ class AddEventPage extends StatefulWidget {
   final String title;
   final String description;
   final String category;
+  final String streetName;
+  final String town;
+  final String region;
   final String state;
-  final String city;
+  //streetName , town, region and state 
 
   const AddEventPage({
     Key? key,
     required this.title,
     required this.description,
     required this.category,
+    required this.streetName,
+    required this.town,
+    required this.region,
     required this.state,
-    required this.city,
   }) : super(key: key);
 
   @override
@@ -26,11 +32,10 @@ class AddEventPage extends StatefulWidget {
 class _AddEventPageState extends State<AddEventPage> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _stateController = TextEditingController();
-  final TextEditingController _cityController = TextEditingController();
   final PostService _postService = PostService();
   File? _image;
   final picker = ImagePicker();
+  Map<String, String>? _selectedAddress; // Update the type
 
   @override
   void initState() {
@@ -38,8 +43,7 @@ class _AddEventPageState extends State<AddEventPage> {
     // Initialize text fields with passed values
     _titleController.text = '';
     _descriptionController.text = '';
-    _stateController.text = '';
-    _cityController.text = '';
+
   }
 
   @override
@@ -58,6 +62,63 @@ class _AddEventPageState extends State<AddEventPage> {
         padding: EdgeInsets.all(16.0),
         child: ListView(
           children: [
+
+            ElevatedButton(
+              onPressed: () async {
+               final selectedAddress = await Navigator.push<Map<String, String>>(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => MapSearch(
+                    onAddressSelected: (components) {
+                      setState(() {
+                        _selectedAddress = components;
+                      });
+                    },
+                  ),
+                ),
+              );
+                // Remove the old code that updates _selectedAddress
+              },
+              child: const Text("Add Location"),
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(Color.fromARGB(255, 243, 20, 154)),
+                foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+              ),
+            ),
+            if (_selectedAddress != null)
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Selected Address:',
+                    style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 4.0),
+                  Text(
+                    'Street Name: ${_selectedAddress!['streetName']}',
+                    style: TextStyle(fontSize: 16.0),
+                  ),
+                  Text(
+                    'Town/City: ${_selectedAddress!['town']}',
+                    style: TextStyle(fontSize: 16.0),
+                  ),
+                  Text(
+                    'Region: ${_selectedAddress!['region']}',
+                    style: TextStyle(fontSize: 16.0),
+                  ),
+                  Text(
+                    'State: ${_selectedAddress!['state']}',
+                    style: TextStyle(fontSize: 16.0),
+                  ),
+                ],
+              ),
+            ),
+
+
+            
+        
             TextField(
               controller: _titleController,
               decoration: InputDecoration(labelText: 'Title'),
@@ -81,14 +142,11 @@ class _AddEventPageState extends State<AddEventPage> {
                 );
               }).toList(),
             ),
-            TextField(
-              controller: _stateController,
-              decoration: InputDecoration(labelText: 'State'),
-            ),
-            TextField(
-              controller: _cityController,
-              decoration: InputDecoration(labelText: 'City'),
-            ),
+            // TextField(
+            //   controller: _addressController,
+            //   decoration: InputDecoration(labelText: 'address'),
+            // ),
+            
             SizedBox(height: 10),
             _image == null
                 ? TextButton.icon(
@@ -113,34 +171,36 @@ class _AddEventPageState extends State<AddEventPage> {
   }
 
   Future<void> _saveEventPost() async {
-    // Extract values from text fields and save event post using _postService.saveEventPost
-    final title = _titleController.text;
-    final description = _descriptionController.text;
-    final category = widget.category;
-    final state = _stateController.text;
-    final city = _cityController.text;
+  // Extract values from text fields and save event post using _postService.saveEventPost
+  final title = _titleController.text;
+  final description = _descriptionController.text;
+  final category = widget.category;
+  
+  final streetName = _selectedAddress?['streetName'] ?? '';
+  final town = _selectedAddress?['town'] ?? '';
+  final region = _selectedAddress?['region'] ?? '';
+  final state = _selectedAddress?['state'] ?? '';
 
-    if (_validateFields(title, description, state, city)) {
-      await _postService.saveEventPost(
-        title: title,
-        description: description,
-        category: category,
-        state: state,
-        city: city,
-        image: _image!,
-      );
+  if (_validateFields(title, description, streetName, town, region, state )) {
+    await _postService.saveEventPost(
+      //streetName , town, region and state 
+      title: title,
+      description: description,
+      category: category,
+      streetName: streetName,
+      town: town,
+      region: region,
+      state: state,
+      image: _image!,
+    );
 
-      Navigator.pop(context);
-    }
+    Navigator.pop(context);
   }
+}
 
-  bool _validateFields(
-    String title,
-    String description,
-    String state,
-    String city,
-  ) {
-    if (title.isEmpty || description.isEmpty || state.isEmpty || city.isEmpty) {
+
+  bool _validateFields(String title, String description, String? streetName, String? town, String? region, String? state) {
+  if (title.isEmpty || description.isEmpty || streetName == null || town == null || region == null || state == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Please fill in all fields and select an image')),
       );
@@ -149,3 +209,5 @@ class _AddEventPageState extends State<AddEventPage> {
     return true;
   }
 }
+
+

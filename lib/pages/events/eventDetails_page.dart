@@ -2,6 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/models/event.dart';
 import 'package:flutter_application_1/models/user.dart';
+import 'package:flutter_application_1/pages/map_page.dart';
+import 'package:flutter_application_1/pages/map_search.dart';
 import 'package:flutter_application_1/profile/profile_page.dart';
 import 'package:flutter_application_1/services/add_post.dart';
 import 'package:flutter_application_1/services/user.dart';
@@ -39,18 +41,18 @@ class _EventDetailsState extends State<EventDetails> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Event Details'),
+        title: const Text('Event Details'),
       ),
       body: SingleChildScrollView(
         child: FutureBuilder<UserModel>(
           future: _userService.getUserInfo(widget.event.creator).first,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
+              return const Center(child: CircularProgressIndicator());
             } else if (snapshot.hasError) {
               return Center(child: Text('Error: ${snapshot.error}'));
             } else if (!snapshot.hasData) {
-              return Center(child: Text('User not found'));
+              return const Center(child: Text('User not found'));
             } else {
               final user = snapshot.data!;
               return Padding(
@@ -60,7 +62,7 @@ class _EventDetailsState extends State<EventDetails> {
                   children: [
                     Row(
                       children: [
-                        Text(
+                        const Text(
                           'Posted by ',
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
@@ -76,7 +78,7 @@ class _EventDetailsState extends State<EventDetails> {
                           },
                           child: Text(
                             user.name,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               decoration: TextDecoration.underline,
                             ),
@@ -86,17 +88,18 @@ class _EventDetailsState extends State<EventDetails> {
                         ),
                       ],
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     Text(
                       widget.event.title,
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Text(
-                      'Location: ${widget.event.state}, ${widget.event.city}',
-                      style: TextStyle(fontSize: 16),
+                      'Location: ${widget.event.streetName}, ${widget.event.town}, ${widget.event.region}, ${widget.event.state}',
+                      style: const TextStyle(fontSize: 16),
                     ),
-                    SizedBox(height: 8),
+
+                    const SizedBox(height: 8),
                     if (widget.event.imageUrl.isNotEmpty)
                       Image.network(
                         widget.event.imageUrl,
@@ -104,17 +107,17 @@ class _EventDetailsState extends State<EventDetails> {
                         width: double.infinity,
                         fit: BoxFit.cover,
                       ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Text(
                       '${widget.event.description}',
-                      style: TextStyle(fontSize: 16),
+                      style: const TextStyle(fontSize: 16),
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     FutureBuilder<List<UserModel>>(
                       future: _participantsFuture,
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting) {
-                          return Center(child: CircularProgressIndicator());
+                          return const Center(child: CircularProgressIndicator());
                         } else if (snapshot.hasError) {
                           return Center(child: Text('Error: ${snapshot.error}'));
                         } else {
@@ -134,10 +137,10 @@ class _EventDetailsState extends State<EventDetails> {
                                     JoinEventSnackbar.showLeftEvent(context);
                                     await _refreshParticipants();
                                   },
-                                  child: Text('Leave Event'),
+                                  child: const Text('Leave Event'),
                                   style: ButtonStyle(
-                                    backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
-                                    foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+                                    backgroundColor: WidgetStateProperty.all<Color>(Colors.red),
+                                    foregroundColor: WidgetStateProperty.all<Color>(Colors.white),
                                   ),
                                 )
                               else
@@ -147,49 +150,49 @@ class _EventDetailsState extends State<EventDetails> {
                                     JoinEventSnackbar.showSuccessOrAlreadyJoined(context, alreadyJoined);
                                     await _refreshParticipants();
                                   },
-                                  child: Text('Join Event'),
+                                  child: const Text('Join Event'),
                                   style: ButtonStyle(
-                                    backgroundColor: MaterialStateProperty.all<Color>(Colors.yellow),
-                                    foregroundColor: MaterialStateProperty.all<Color>(Colors.black),
+                                    backgroundColor: WidgetStateProperty.all<Color>(Colors.yellow),
+                                    foregroundColor: WidgetStateProperty.all<Color>(Colors.black),
                                   ),
                                 ),
-                              SizedBox(height: 24),
-                              Text(
+                              const SizedBox(height: 24),
+                              const Text(
                                 'Users who joined the event:',
                                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                               ),
-                              SizedBox(height: 8),
+                              const SizedBox(height: 8),
                           ListView(
-  shrinkWrap: true,
-  children: participants.map((participant) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: SizedBox(
-        width: 48, // Set the width of the profile image
-        height: 48, // Set the height of the profile image
-        child: CircleAvatar(
-          backgroundImage: NetworkImage(participant.profileImageUrl),
-          backgroundColor: Colors.grey[300], // Add a background color for better visualization during loading
-        ),
-      ),
-      title: Text(
-        participant.name,
-        style: TextStyle(
-          fontSize: 16, // Adjust the font size of the name
-        ),
-        textAlign: TextAlign.start, // Align text to the start (left side)
-      ),
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ProfilePage(user: participant),
-          ),
-        );
-      },
-    );
-  }).toList(),
-),
+                          shrinkWrap: true,
+                          children: participants.map((participant) {
+                            return ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: SizedBox(
+                                width: 48, // Set the width of the profile image
+                                height: 48, // Set the height of the profile image
+                                child: CircleAvatar(
+                                  backgroundImage: NetworkImage(participant.profileImageUrl),
+                                  backgroundColor: Colors.grey[300], // Add a background color for better visualization during loading
+                                ),
+                              ),
+                              title: Text(
+                                participant.name,
+                                style: const TextStyle(
+                                  fontSize: 16, // Adjust the font size of the name
+                                ),
+                                textAlign: TextAlign.start, // Align text to the start (left side)
+                              ),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ProfilePage(user: participant),
+                                  ),
+                                );
+                              },
+                            );
+                          }).toList(),
+                        ),
 
 
 
@@ -226,7 +229,7 @@ class JoinEventSnackbar {
 
   static void showSuccess(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
+      const SnackBar(
         content: Text('You have joined the event!'),
         duration: Duration(seconds: 2),
       ),
@@ -235,7 +238,7 @@ class JoinEventSnackbar {
 
   static void showAlreadyJoined(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
+      const SnackBar(
         content: Text('You have already joined the event!'),
         duration: Duration(seconds: 2),
       ),
@@ -244,7 +247,7 @@ class JoinEventSnackbar {
 
   static void showLeftEvent(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
+      const SnackBar(
         content: Text('You have left the event!'),
         duration: Duration(seconds: 2),
       ),

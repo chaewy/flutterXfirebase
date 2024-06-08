@@ -4,6 +4,7 @@ import 'package:flutter_application_1/auth/auth_page.dart';
 import 'package:flutter_application_1/pages/home_page.dart';
 
 
+
 class MainPage extends StatelessWidget {
   const MainPage({super.key});
 

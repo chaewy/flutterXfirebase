@@ -4,6 +4,9 @@ import 'package:flutter_application_1/firebase_options.dart';
 import 'package:flutter_application_1/auth/main_page.dart';
 import 'package:flutter_application_1/themes/theme_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
+import 'package:open_street_map_search_and_pick/open_street_map_search_and_pick.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
