@@ -13,33 +13,29 @@ class PostListByUser extends StatelessWidget {
   PostService _postService = PostService();
   UserService _userService = UserService();
 
-  Widget _buildImages(BuildContext context, List<String> imageUrls) {
-    if (imageUrls.length == 1) {
-      return GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => FullImagePage(imageUrl: imageUrls.first),
-            ),
-          );
-        },
-        child: Center(
-          child: Image.network(
-            imageUrls.first,
-            fit: BoxFit.cover,
+ Widget _buildImages(BuildContext context, List<String> imageUrls) {
+  if (imageUrls.length == 1) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => FullImagePage(imageUrl: imageUrls.first),
           ),
+        );
+      },
+      child: Center(
+        child: Image.network(
+          imageUrls.first,
+          fit: BoxFit.cover,
         ),
-      );
-    } else {
-      return GridView.builder(
-        shrinkWrap: true,
-        physics: NeverScrollableScrollPhysics(),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 8.0,
-          mainAxisSpacing: 8.0,
-        ),
+      ),
+    );
+  } else {
+    return Container(
+      height: 200, // Set a fixed height for the image container
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
         itemCount: imageUrls.length,
         itemBuilder: (context, index) {
           return GestureDetector(
@@ -51,15 +47,21 @@ class PostListByUser extends StatelessWidget {
                 ),
               );
             },
-            child: Image.network(
-              imageUrls[index],
-              fit: BoxFit.cover,
+            child: Padding(
+              padding: EdgeInsets.only(right: 8.0),
+              child: Image.network(
+                imageUrls[index],
+                height: 200, // Set the height of each image
+                width: 200, // Set the width of each image
+                fit: BoxFit.cover,
+              ),
             ),
           );
         },
-      );
-    }
+      ),
+    );
   }
+}
 
   PostListByUser({required this.uid});
 

@@ -1,12 +1,10 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/auth/main_page.dart';
 import 'package:flutter_application_1/home/Chat.dart';
 import 'package:flutter_application_1/home/feed.dart';
-import 'package:flutter_application_1/home/search.dart';
+import 'package:flutter_application_1/pages/search/search_page.dart';
 import 'package:flutter_application_1/my_components/drawer.dart';
-import 'package:flutter_application_1/pages/events/addEvent_page.dart';
 import 'package:flutter_application_1/pages/events/event_page.dart';
+import 'package:flutter_application_1/pages/notification/noty.dart';
 import 'package:flutter_application_1/pages/post/add_post.dart';
 
 class HomePage extends StatefulWidget {
@@ -21,8 +19,8 @@ class _HomePageState extends State<HomePage> {
   final List<Widget> _children = [
     Feed(),
     EventPage(),
-    Search(),
     Chat(),
+    NotificationPage(),
   ];
 
   void onTabPressed(int index) {
@@ -31,11 +29,16 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  Color getIconColor(BuildContext context) {
+    final Brightness brightness = Theme.of(context).brightness;
+    return brightness == Brightness.dark ? Colors.white : Colors.black;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Home'),
+        title: Text('Hobby App'),
         elevation: 0,
         actions: [
           Padding(
@@ -43,16 +46,12 @@ class _HomePageState extends State<HomePage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                MaterialButton(
+                IconButton(
+                  icon: Icon(Icons.search),
                   onPressed: () {
-                    FirebaseAuth.instance.signOut();
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => MainPage()));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => SearchPage()));
                   },
-                  color: Colors.yellow,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text('Logout'),
+                  color: getIconColor(context),
                 ),
               ],
             ),
@@ -99,20 +98,20 @@ class _HomePageState extends State<HomePage> {
         showUnselectedLabels: false,
         items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
+            icon: Icon(Icons.home, color: getIconColor(context)),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.event),
+            icon: Icon(Icons.event, color: getIconColor(context)),
             label: 'Event',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Search',
+            icon: Icon(Icons.message, color: getIconColor(context)),
+            label: 'Chat',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.message),
-            label: 'Chat',
+            icon: Icon(Icons.notifications, color: getIconColor(context)),
+            label: 'Notification',
           ),
         ],
       ),

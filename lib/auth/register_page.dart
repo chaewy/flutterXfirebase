@@ -22,6 +22,8 @@ class _RegisterPageState extends State<RegisterPage> {
   //text controller
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _locationController = TextEditingController();
+  String? selectedState; // Defined here
 
   @override
   void dispose() {
@@ -30,27 +32,40 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
-  //create a user
-  Future signUp() async{
-    UserCredential userCredential = await  FirebaseAuth.instance.createUserWithEmailAndPassword(
-      email: _emailController.text.trim(), 
+  ///create a user
+Future signUp() async {
+  try {
+    // Create user with Firebase Authentication
+    UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      email: _emailController.text.trim(),
       password: _passwordController.text.trim(),
-      );
+    );
 
-    //after create the user, create a documents
-    FirebaseFirestore.instance
-    .collection("Users")
-    .doc(userCredential.user!.uid) // TUKAR
-    .set({
-      'uid':userCredential.user!.uid, //tambah for uid
+    // After creating the user, create a document in Firestore
+    await FirebaseFirestore.instance
+        .collection("Users")
+        .doc(userCredential.user!.uid)
+        .set({
+      'uid': userCredential.user!.uid, // Add UID
       'email': userCredential.user!.email,
       'name': _emailController.text.split('@')[0],
+      'location': _locationController.text.trim(), // Use the text value of the controller
+      'state': selectedState, // Use the selectedState variable
       'bannerImageUrl': 'https://firebasestorage.googleapis.com/v0/b/hobby-b1c8b.appspot.com/o/default%2Fdownload.png?alt=media&token=3a86e147-621c-4d06-9f49-287a693170ae',
       'profileImageUrl': 'https://firebasestorage.googleapis.com/v0/b/hobby-b1c8b.appspot.com/o/default%2Fdefault_profile_icon.jpg?alt=media&token=4d751354-0697-4c92-90ee-a58a565f0281',
       'bio': '',
     });
 
+  } catch (e) {
+    // Handle errors appropriately
+    print('Error during sign up: $e');
+    // You might want to show a snackbar or dialog to inform the user of the error
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Failed to sign up: $e'))
+    );
   }
+}
+
 
 
 
@@ -131,6 +146,53 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
               ),
+
+              //location dropdown
+              SizedBox(height: 15),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                  child: TextField( // Changed to TextField for location
+                    controller: _locationController,
+                    decoration: InputDecoration(
+                      hintText: "Location",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 15),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                  child: DropdownButton<String>(
+                    value: selectedState,
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        selectedState = newValue!;
+                      });
+                    },
+                    items: <String>[
+                      'Perlis',
+                      'Kedah',
+                      'Pulau Pinang',
+                      'Perak',
+                      'Melaka',
+                      'Negeri Sembilan',
+                      'Kuala Lumpur',
+                      'Putrajaya',
+                      'Selangor',
+                      'Pahang',
+                      'Terengganu',
+                      'Kelantan'
+                    ]
+                        .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                  ),
+                ),
             
               SizedBox(height: 15),
             

@@ -1,6 +1,7 @@
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/auth/main_page.dart';
 import 'package:flutter_application_1/models/user.dart';
 import 'package:flutter_application_1/pages/home_page.dart';
 import 'package:flutter_application_1/pages/setting_page.dart';
@@ -84,7 +85,8 @@ class MyDrawer extends StatelessWidget {
               leading: Icon(Icons.exit_to_app),
               title: const Text('L O G O U T'),
               onTap: () {
-                // Logout logic here
+                FirebaseAuth.instance.signOut();
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => MainPage()));
               },
             ),
           )

@@ -86,10 +86,11 @@ Stream<UserModel> getUserInfo(uid){
 Stream<List<UserModel>> queryByName(String search) {
   return FirebaseFirestore.instance
       .collection("Users")
-        .where('name', isEqualTo: search.toLowerCase())
-        .limit(10)
-        .snapshots()
-        .map((snapshot) => _userListFromQuerySnapshot(snapshot));
+      .where('name', isGreaterThanOrEqualTo: search)
+      .where('name', isLessThanOrEqualTo: search + '\uf8ff')
+      .limit(10)
+      .snapshots()
+      .map((snapshot) => _userListFromQuerySnapshot(snapshot));
 }
 
 //---------------------------------------------------------------------------------------------------

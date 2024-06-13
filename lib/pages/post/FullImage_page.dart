@@ -20,7 +20,11 @@ class FullImagePage extends StatelessWidget {
         ),
       ),
       body: Center(
-        child: Image.network(imageUrl),
+        child: InteractiveViewer(
+          minScale: 0.5, // Minimum zoom scale
+          maxScale: 3.0, // Maximum zoom scale
+          child: Image.network(imageUrl),
+        ),
       ),
     );
   }

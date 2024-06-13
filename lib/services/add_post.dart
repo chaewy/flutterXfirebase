@@ -261,40 +261,44 @@ Future<void> updateLikeCount(PostModel post) async {
   // save events post
 
  Future<void> saveEventPost({
-    required String title,
-    required String description,
-    required String category,
-    required String streetName,
-    required String town,
-    required String region,
-    required String state,
-    required File image,
-    //streetName , town, region and state 
-  }) async {
-    try {
-      // Upload image to Firebase Storage
-      final storageRef = FirebaseStorage.instance.ref().child('event_images/${DateTime.now().toIso8601String()}');
-      await storageRef.putFile(image);
-      final imageUrl = await storageRef.getDownloadURL();
+  required String title,
+  required String description,
+  required String category,
+  required String streetName,
+  required String town,
+  required String region,
+  required String state,
+  required List<File> images,
+}) async {
+  try {
+    List<String> imageUrls = [];
 
-      // Save event data to Firestore
-      await FirebaseFirestore.instance.collection("event").add({
-        'title': title,
-        'description': description,
-        'category': category,
-        'streetName': streetName,
-        'town': town,
-        'region': region,
-        'state': state,
-        'imageUrl': imageUrl,
-        'creator': FirebaseAuth.instance.currentUser!.uid,
-        'timestamp': FieldValue.serverTimestamp(),
-      });
-    } catch (e) {
-      print('Error saving event post: $e');
-      // You can handle errors here, such as showing an error message to the user
+    // Upload images to Firebase Storage
+    for (var imageFile in images) {
+      final storageRef = FirebaseStorage.instance.ref().child('event_images/${DateTime.now().toIso8601String()}');
+      await storageRef.putFile(imageFile);
+      final url = await storageRef.getDownloadURL();
+      imageUrls.add(url);
     }
+
+    // Save event data to Firestore
+    await FirebaseFirestore.instance.collection("event").add({
+      'title': title,
+      'description': description,
+      'category': category,
+      'streetName': streetName,
+      'town': town,
+      'region': region,
+      'state': state,
+      'imageUrl': imageUrls, // Store list of image URLs
+      'creator': FirebaseAuth.instance.currentUser!.uid,
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+  } catch (e) {
+    print('Error saving event post: $e');
+    // You can handle errors here, such as showing an error message to the user
   }
+}
 
 // ------------------------------------------------------------------------------------------------
   //get save events post

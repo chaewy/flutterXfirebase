@@ -4,10 +4,11 @@ import 'package:flutter/material.dart';
 
 ThemeData lightMode = ThemeData(
   colorScheme: ColorScheme.light(
+    primary: Colors.black, // Button and icon color in light mode
+    onPrimary: Colors.white, // Text color on top of the primary color
     surface: Colors.white,
-    primary: const Color.fromARGB(255, 221, 219, 219),
+    background: Colors.grey.shade100,
     secondary: Colors.grey.shade200,
-    tertiary: Colors.white,
-    inversePrimary: Colors.grey.shade900,
-  )
+    onSecondary: Colors.black, // Text color on top of the secondary color
+  ),
 );

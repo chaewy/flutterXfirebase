@@ -2,11 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/models/event.dart';
 import 'package:flutter_application_1/models/user.dart';
-import 'package:flutter_application_1/pages/map_page.dart';
-import 'package:flutter_application_1/pages/map_search.dart';
 import 'package:flutter_application_1/profile/profile_page.dart';
 import 'package:flutter_application_1/services/add_post.dart';
 import 'package:flutter_application_1/services/user.dart';
+import 'package:flutter_application_1/pages/post/FullImage_page.dart';
 
 class EventDetails extends StatefulWidget {
   final EventModel event;
@@ -22,13 +21,11 @@ class _EventDetailsState extends State<EventDetails> {
   final PostService _postService = PostService();
   late Future<List<UserModel>> _participantsFuture;
   String userId = FirebaseAuth.instance.currentUser!.uid;
-  
 
   @override
   void initState() {
     super.initState();
     _participantsFuture = _userService.getEventParticipants(widget.event.id);
-    
   }
 
   Future<void> _refreshParticipants() async {
@@ -37,7 +34,7 @@ class _EventDetailsState extends State<EventDetails> {
     });
   }
 
-    @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -98,14 +95,35 @@ class _EventDetailsState extends State<EventDetails> {
                       'Location: ${widget.event.streetName}, ${widget.event.town}, ${widget.event.region}, ${widget.event.state}',
                       style: const TextStyle(fontSize: 16),
                     ),
-
                     const SizedBox(height: 8),
                     if (widget.event.imageUrl.isNotEmpty)
-                      Image.network(
-                        widget.event.imageUrl,
+                      SizedBox(
                         height: 200,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: widget.event.imageUrl.length,
+                          itemBuilder: (context, index) {
+                            final imageUrl = widget.event.imageUrl[index];
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => FullImagePage(imageUrl: imageUrl),
+                                    ),
+                                  );
+                                },
+                                child: Image.network(
+                                  imageUrl,
+                                  height: 200,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     const SizedBox(height: 8),
                     Text(
@@ -123,87 +141,75 @@ class _EventDetailsState extends State<EventDetails> {
                         } else {
                           final participants = snapshot.data!;
                           final isParticipant = participants.any((participant) => participant.uid == userId);
-
-                          
                           return Align(
-                          alignment: Alignment.centerRight,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.end, // Align children to the end (right side)
-                            children: [
-                              if (isParticipant)
-                                ElevatedButton(
-                                  onPressed: () async {
-                                    await _postService.leaveEvent(widget.event, userId);
-                                    JoinEventSnackbar.showLeftEvent(context);
-                                    await _refreshParticipants();
-                                  },
-                                  child: const Text('Leave Event'),
-                                  style: ButtonStyle(
-                                    backgroundColor: WidgetStateProperty.all<Color>(Colors.red),
-                                    foregroundColor: WidgetStateProperty.all<Color>(Colors.white),
+                            alignment: Alignment.centerRight,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                if (isParticipant)
+                                  ElevatedButton(
+                                    onPressed: () async {
+                                      await _postService.leaveEvent(widget.event, userId);
+                                      JoinEventSnackbar.showLeftEvent(context);
+                                      await _refreshParticipants();
+                                    },
+                                    child: const Text('Leave Event'),
+                                    style: ButtonStyle(
+                                      backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
+                                      foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+                                    ),
+                                  )
+                                else
+                                  ElevatedButton(
+                                    onPressed: () async {
+                                      bool alreadyJoined = await _postService.joinEvent(widget.event);
+                                      JoinEventSnackbar.showSuccessOrAlreadyJoined(context, alreadyJoined);
+                                      await _refreshParticipants();
+                                    },
+                                    child: const Text('Join Event'),
+                                    style: ButtonStyle(
+                                      backgroundColor: MaterialStateProperty.all<Color>(Colors.yellow),
+                                      foregroundColor: MaterialStateProperty.all<Color>(Colors.black),
+                                    ),
                                   ),
-                                )
-                              else
-                                ElevatedButton(
-                                  onPressed: () async {
-                                    bool alreadyJoined = await _postService.joinEvent(widget.event);
-                                    JoinEventSnackbar.showSuccessOrAlreadyJoined(context, alreadyJoined);
-                                    await _refreshParticipants();
-                                  },
-                                  child: const Text('Join Event'),
-                                  style: ButtonStyle(
-                                    backgroundColor: WidgetStateProperty.all<Color>(Colors.yellow),
-                                    foregroundColor: WidgetStateProperty.all<Color>(Colors.black),
-                                  ),
+                                const SizedBox(height: 24),
+                                const Text(
+                                  'Users who joined the event:',
+                                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                                 ),
-                              const SizedBox(height: 24),
-                              const Text(
-                                'Users who joined the event:',
-                                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 8),
-                          ListView(
-                          shrinkWrap: true,
-                          children: participants.map((participant) {
-                            return ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              leading: SizedBox(
-                                width: 48, // Set the width of the profile image
-                                height: 48, // Set the height of the profile image
-                                child: CircleAvatar(
-                                  backgroundImage: NetworkImage(participant.profileImageUrl),
-                                  backgroundColor: Colors.grey[300], // Add a background color for better visualization during loading
+                                const SizedBox(height: 8),
+                                ListView(
+                                  shrinkWrap: true,
+                                  children: participants.map((participant) {
+                                    return ListTile(
+                                      contentPadding: EdgeInsets.zero,
+                                      leading: SizedBox(
+                                        width: 48,
+                                        height: 48,
+                                        child: CircleAvatar(
+                                          backgroundImage: NetworkImage(participant.profileImageUrl),
+                                          backgroundColor: Colors.grey[300],
+                                        ),
+                                      ),
+                                      title: Text(
+                                        participant.name,
+                                        style: const TextStyle(fontSize: 16),
+                                        textAlign: TextAlign.start,
+                                      ),
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => ProfilePage(user: participant),
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  }).toList(),
                                 ),
-                              ),
-                              title: Text(
-                                participant.name,
-                                style: const TextStyle(
-                                  fontSize: 16, // Adjust the font size of the name
-                                ),
-                                textAlign: TextAlign.start, // Align text to the start (left side)
-                              ),
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ProfilePage(user: participant),
-                                  ),
-                                );
-                              },
-                            );
-                          }).toList(),
-                        ),
-
-
-
-
-
-
-
-                            ],
-                          ),
-                        );
-
+                              ],
+                            ),
+                          );
                         }
                       },
                     ),
