@@ -11,6 +11,7 @@ class UserModel {
   final String location;
   final String education;
   final String hobby;
+  final String fcmToken; // New field to store FCM token
 
   UserModel({
     required this.uid,
@@ -23,6 +24,7 @@ class UserModel {
     this.location = '',
     this.education = '',
     this.hobby = '',
+    this.fcmToken = '', // Initialize with empty string
   });
 
   // Factory constructor to create a UserModel from a DocumentSnapshot
@@ -40,6 +42,7 @@ class UserModel {
       location: data['location'] ?? '',
       education: data['education'] ?? '',
       hobby: data['hobby'] ?? '',
+      fcmToken: data['fcmToken'] ?? '', // Populate FCM token from data
     );
   }
 }

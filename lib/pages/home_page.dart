@@ -20,7 +20,7 @@ class _HomePageState extends State<HomePage> {
     Feed(),
     EventPage(),
     Chat(),
-    NotificationPage(),
+    NotificationPage(message: null), // Pass null directly
   ];
 
   void onTabPressed(int index) {

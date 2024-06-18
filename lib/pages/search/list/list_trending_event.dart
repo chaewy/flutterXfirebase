@@ -1,7 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/models/event.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_application_1/models/event.dart'; // Adjust import as per your project structure
+import 'package:flutter_application_1/pages/events/eventDetails_page.dart'; // Adjust import as per your project structure
 
 class ListTrendingEvent extends StatelessWidget {
   Future<List<EventModel>> fetchAndSortEventsByParticipantCount() async {
@@ -45,19 +45,36 @@ class ListTrendingEvent extends StatelessWidget {
                   itemCount: events.length,
                   itemBuilder: (context, index) {
                     final event = events[index];
-                    return ListTile(
-                      title: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(event.title, style: TextStyle(fontWeight: FontWeight.bold)),
-                          Text(event.description),
-                          Text('Participants: ${event.participantCount}'),
-                        ],
-                      ),
-                      trailing: Container(
-                        width: 50, // Adjust the width as needed
-                        height: 50, // Adjust the height as needed
-                        child: Image.network(event.imageUrl.first, fit: BoxFit.cover),
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EventDetails(event: event),
+                          ),
+                        );
+                      },
+                      child: ListTile(
+                        title: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(event.title, style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text(event.description),
+                            Text('Participants: ${event.participantCount}'),
+                          ],
+                        ),
+                        trailing: Container(
+                          width: 80, // Increase the width as needed
+                          height: 80, // Increase the height as needed
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8), // Optional: Add border radius
+                            child: Image.network(
+                              event.imageUrl.isNotEmpty ? event.imageUrl.first : '',
+                              fit: BoxFit.cover, // Ensure the image covers the entire container
+                            ),
+                          ),
+                        ),
+
                       ),
                     );
                   },

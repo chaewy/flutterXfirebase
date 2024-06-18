@@ -302,17 +302,35 @@ Future<void> updateLikeCount(PostModel post) async {
 
 // ------------------------------------------------------------------------------------------------
   //get save events post
-  Stream<List<EventModel>> getEventPosts() {
+  // Stream<List<EventModel>> getEventPosts() {
+  //   return FirebaseFirestore.instance
+  //       .collection('event')
+  //       .orderBy('timestamp', descending: true)
+  //       .snapshots()
+  //       .map((querySnapshot) {
+  //     return querySnapshot.docs.map((doc) {
+  //       return EventModel.fromDocument(doc);
+  //     }).toList();
+  //   });
+  // }
+  Stream<List<EventModel>> getEventPosts(String category) {
     return FirebaseFirestore.instance
         .collection('event')
-        .orderBy('timestamp', descending: true)
+        .where('category', isEqualTo: category)
         .snapshots()
         .map((querySnapshot) {
-      return querySnapshot.docs.map((doc) {
-        return EventModel.fromDocument(doc);
-      }).toList();
+      return querySnapshot.docs.map((doc) => EventModel.fromDocument(doc)).toList();
     });
   }
+  Stream<List<EventModel>> getEventList() {
+  return FirebaseFirestore.instance
+      .collection('event')
+      .snapshots()
+      .map((querySnapshot) {
+    return querySnapshot.docs.map((doc) => EventModel.fromDocument(doc)).toList();
+  });
+}
+
 
   //------------------------------------------------------------------------------------
 
@@ -341,6 +359,7 @@ Future<void> updateLikeCount(PostModel post) async {
             .doc(userId)
             .set({
               'userId': userId,
+              // 'name': name,
               'joinedAt': FieldValue.serverTimestamp(),
             });
         return false; // User successfully joined the event

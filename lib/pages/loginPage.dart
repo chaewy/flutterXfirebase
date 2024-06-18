@@ -1,9 +1,10 @@
 // ignore_for_file: prefer_const_constructors, use_super_parameters
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter_application_1/firebase_api.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'forgot_pw_page.dart';
@@ -23,13 +24,24 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
 
   // sign in 
-  Future signIn() async{
-    await FirebaseAuth.instance.signInWithEmailAndPassword(
-      email: _emailController.text.trim(), 
-      password: _passwordController.text.trim(),
-    );
-    
-  }
+  Future signIn() async {
+  await FirebaseAuth.instance.signInWithEmailAndPassword(
+    email: _emailController.text.trim(),
+    password: _passwordController.text.trim(),
+  );
+
+  // Get FCM token
+  final firebaseApi = FirebaseApi();
+  final fcmToken = await firebaseApi.getFCMToken();
+
+  // Update FCM token in Users collection
+  await FirebaseFirestore.instance.collection('Users').doc(FirebaseAuth.instance.currentUser!.uid).update({
+    'fcmToken': fcmToken,
+  });
+}
+
+
+
 
   @override
   void dispose() {

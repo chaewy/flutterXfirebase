@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/firebase_api.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -33,38 +35,42 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   ///create a user
-Future signUp() async {
-  try {
-    // Create user with Firebase Authentication
-    UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-      email: _emailController.text.trim(),
-      password: _passwordController.text.trim(),
-    );
+  Future signUp() async {
+    try {
+      // Create user with Firebase Authentication
+      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
 
-    // After creating the user, create a document in Firestore
-    await FirebaseFirestore.instance
-        .collection("Users")
-        .doc(userCredential.user!.uid)
-        .set({
-      'uid': userCredential.user!.uid, // Add UID
-      'email': userCredential.user!.email,
-      'name': _emailController.text.split('@')[0],
-      'location': _locationController.text.trim(), // Use the text value of the controller
-      'state': selectedState, // Use the selectedState variable
-      'bannerImageUrl': 'https://firebasestorage.googleapis.com/v0/b/hobby-b1c8b.appspot.com/o/default%2Fdownload.png?alt=media&token=3a86e147-621c-4d06-9f49-287a693170ae',
-      'profileImageUrl': 'https://firebasestorage.googleapis.com/v0/b/hobby-b1c8b.appspot.com/o/default%2Fdefault_profile_icon.jpg?alt=media&token=4d751354-0697-4c92-90ee-a58a565f0281',
-      'bio': '',
-    });
+      final firebaseApi = FirebaseApi();
+      final fcmToken = await firebaseApi.getFCMToken();
 
-  } catch (e) {
-    // Handle errors appropriately
-    print('Error during sign up: $e');
-    // You might want to show a snackbar or dialog to inform the user of the error
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Failed to sign up: $e'))
-    );
+      // After creating the user, create a document in Firestore
+      await FirebaseFirestore.instance
+          .collection("Users")
+          .doc(userCredential.user!.uid)
+          .set({
+        'uid': userCredential.user!.uid, // Add UID
+        'email': userCredential.user!.email,
+        'name': _emailController.text.split('@')[0],
+        'location': _locationController.text.trim(), // Use the text value of the controller
+        'state': selectedState, // Use the selectedState variable
+        'bannerImageUrl': 'https://firebasestorage.googleapis.com/v0/b/hobby-b1c8b.appspot.com/o/default%2Fdownload.png?alt=media&token=3a86e147-621c-4d06-9f49-287a693170ae',
+        'profileImageUrl': 'https://firebasestorage.googleapis.com/v0/b/hobby-b1c8b.appspot.com/o/default%2Fdefault_profile_icon.jpg?alt=media&token=4d751354-0697-4c92-90ee-a58a565f0281',
+        'bio': '',
+        'fcmToken': fcmToken, // Add FCM token to the user document
+      });
+
+    } catch (e) {
+      // Handle errors appropriately
+      print('Error during sign up: $e');
+      // You might want to show a snackbar or dialog to inform the user of the error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to sign up: $e'))
+      );
+    }
   }
-}
 
 
 

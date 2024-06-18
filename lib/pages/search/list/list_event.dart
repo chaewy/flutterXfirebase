@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_application_1/models/event.dart'; // Adjust import as per your project structure
 import 'package:flutter_application_1/models/user.dart'; // Adjust import as per your project structure
+import 'package:flutter_application_1/pages/events/eventDetails_page.dart';
 
 class ListEvents extends StatelessWidget {
   final String searchText;
@@ -26,7 +27,7 @@ class ListEvents extends StatelessWidget {
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return Center(child: Text('No Events Found'));
+          return Center(child: const Text('No Events Found'));
         }
 
         List<EventModel> events = snapshot.data!.docs.map((DocumentSnapshot doc) {
@@ -72,28 +73,38 @@ class ListEvents extends StatelessWidget {
 
                     int participantCount = participantSnapshot.data!.docs.length;
 
-                    return Card(
-                      elevation: 3,
-                      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                      child: ListTile(
-                        contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                        leading: CircleAvatar(
-                          backgroundImage: NetworkImage(creator.profileImageUrl),
-                        ),
-                        title: Text(event.title),
-                        subtitle: Text('$participantCount participants'),
-                        trailing: ClipRRect(
-                          borderRadius: BorderRadius.circular(8.0),
-                          child: Container(
-                            width: 100.0,
-                            height: 100.0,
-                            decoration: BoxDecoration(
-                              image: event.imageUrl.isNotEmpty
-                                  ? DecorationImage(
-                                      fit: BoxFit.cover,
-                                      image: NetworkImage(event.imageUrl[0]),
-                                    )
-                                  : null,
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EventDetails(event: event),
+                          ),
+                        );
+                      },
+                      child: Card(
+                        elevation: 3,
+                        margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                        child: ListTile(
+                          contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                          leading: CircleAvatar(
+                            backgroundImage: NetworkImage(creator.profileImageUrl),
+                          ),
+                          title: Text(event.title),
+                          subtitle: Text('$participantCount participants'),
+                          trailing: ClipRRect(
+                            borderRadius: BorderRadius.circular(8.0),
+                            child: Container(
+                              width: 100.0,
+                              height: 100.0,
+                              decoration: BoxDecoration(
+                                image: event.imageUrl.isNotEmpty
+                                    ? DecorationImage(
+                                        fit: BoxFit.cover,
+                                        image: NetworkImage(event.imageUrl[0]),
+                                      )
+                                    : null,
+                              ),
                             ),
                           ),
                         ),
