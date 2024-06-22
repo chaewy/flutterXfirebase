@@ -63,12 +63,10 @@ class _LoginPageState extends State<LoginPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
               // Hello again
-              Text(
-                "Hello again",
-                style: GoogleFonts.bebasNeue(
-                  fontSize: 54,
+              Image.network(
+                  'https://firebasestorage.googleapis.com/v0/b/hobby-b1c8b.appspot.com/o/default%2FHobbyist%20Logo%202.png?alt=media&token=6e8a75f7-bb0c-4f0a-a78c-e1e3f634f6d4',
+                  height: 70, // Adjust height as needed
                 ),
-              ),
             
                 SizedBox(height: 10),
             
@@ -164,14 +162,14 @@ class _LoginPageState extends State<LoginPage> {
                   child: Container(
                     padding: EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.deepPurple,
+                      color: Color.fromARGB(255, 237, 163, 43),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Center(
                       child: Text(
                         'Sign in ',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: Colors.black,
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
                         ),

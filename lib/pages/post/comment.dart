@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/models/post.dart';
-import 'package:flutter_application_1/pages/comment_page.dart';
-import 'package:flutter_application_1/pages/post/list_home.dart';
+import 'package:flutter_application_1/pages/post/comment_page.dart';
 
 class Comment extends StatefulWidget {
   final PostModel post;

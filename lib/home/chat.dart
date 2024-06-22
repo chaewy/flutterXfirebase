@@ -42,8 +42,9 @@ class Chat extends StatelessWidget {
                   children: [
                     TabBar(
                       indicatorColor: Colors.white,
+                      // indicatorSize: TabBarIndicatorSize.label, // Set indicator size to label
                       labelColor: Colors.white,
-                      unselectedLabelColor: Colors.grey,
+                      unselectedLabelColor: Colors.black,
                       tabs: [
                         Tab(text: "Direct Message"),
                         Tab(text: "Event Chat"),

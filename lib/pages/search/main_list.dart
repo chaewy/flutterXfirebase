@@ -39,7 +39,7 @@ class _MainListState extends State<MainList> {
         children: [
           // Upper navigation bar
           Container(
-            color: Colors.blue, // Example background color
+            color: Color.fromARGB(255, 245, 168, 35),
             padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,

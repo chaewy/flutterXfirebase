@@ -1,8 +1,11 @@
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_application_1/firebase_api.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
+import 'dart:io';
+
 import 'package:flutter_application_1/my_components/chat_bubble.dart';
 import 'package:flutter_application_1/services/chat_service.dart';
 
@@ -11,10 +14,10 @@ class ChatPage extends StatefulWidget {
   final String receiverID;
 
   ChatPage({
-    super.key,
+    Key? key,
     required this.receiverName,
     required this.receiverID,
-  });
+  }) : super(key: key);
 
   @override
   _ChatPageState createState() => _ChatPageState();
@@ -31,9 +34,7 @@ class _ChatPageState extends State<ChatPage> {
     _currentUser = FirebaseAuth.instance.currentUser; // Get current user
   }
 
-  // ------------------------------------------------------------------------------------------------------------------------
-
-     void sendMessages() async {
+  Future<void> _sendMessage() async {
     if (_messageController.text.isNotEmpty) {
       await _chatService.sendMessages(widget.receiverID, _messageController.text);
 
@@ -41,6 +42,22 @@ class _ChatPageState extends State<ChatPage> {
       sendNotification(widget.receiverID, _messageController.text);
 
       _messageController.clear();
+    }
+  }
+
+  Future<void> _sendImage() async {
+    try {
+      await _chatService.pickImage(widget.receiverID);
+    } catch (e) {
+      print('Error picking image: $e');
+    }
+  }
+
+  Future<void> _sendFile() async {
+    try {
+      await _chatService.pickFile(widget.receiverID);
+    } catch (e) {
+      print('Error picking file: $e');
     }
   }
 
@@ -69,8 +86,6 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
-// ------------------------------------------------------------------------------------------------------------------------
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -91,79 +106,122 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Widget _buildMessageList() {
-    String senderID = _currentUser != null ? _currentUser!.uid : '';
+  String senderID = _currentUser != null ? _currentUser!.uid : '';
 
-    return StreamBuilder(
-      stream: _chatService.getMessages(widget.receiverID, senderID),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return const Text("Error");
-        }
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Text("Loading ....");
-        }
-        return ListView(
-          children: snapshot.data!.docs
-              .map((doc) => _buildMessageItem(doc))
-              .toList(),
-        );
-      },
-    );
-  }
+  return StreamBuilder(
+    stream: _chatService.getMessages(widget.receiverID, senderID),
+    builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+      if (snapshot.hasError) {
+        return Center(child: Text("Error: ${snapshot.error}"));
+      }
 
-  Widget _buildMessageItem(DocumentSnapshot doc) {
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return Center(child: CircularProgressIndicator());
+      }
 
-    bool isCurrentUser = data['senderID'] == _currentUser!.uid;
-    var alignment = isCurrentUser ? Alignment.centerRight : Alignment.centerLeft;
+      return ListView(
+        reverse: true,
+        padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 10.0),
+        children: snapshot.data!.docs.map((doc) {
+          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+          bool isCurrentUser = data['senderID'] == _currentUser!.uid;
 
-    return Container(
-      alignment: alignment,
-      child: Column(
-        crossAxisAlignment: isCurrentUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-        children: [
-          ChatBubble(
-            message: data["message"],
-            isCurrentUser: isCurrentUser,
-          ),
-        ],
-      ),
-    );
-  }
+          // Determine if the message has imageUrl or fileUrl
+          bool hasImage = data.containsKey('imageUrl') && data['imageUrl'] != null;
+          bool hasFile = data.containsKey('fileUrl') && data['fileUrl'] != null;
+
+          return Column(
+            crossAxisAlignment:
+                isCurrentUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            children: [
+              if (hasImage)
+                Container(
+                  width: 200, // Adjust width as needed
+                  child: Image.network(data['imageUrl']),
+                ),
+              if (hasFile)
+                InkWell(
+                  onTap: () {
+                    // Handle file tap action (open or view the file)
+                    // Example: openUrlInBrowser(data['fileUrl']);
+                    print('Opening file: ${data['fileUrl']}');
+                  },
+                  child: Card(
+                    elevation: 2,
+                    margin: EdgeInsets.symmetric(vertical: 5.0),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.attach_file),
+                          SizedBox(width: 10),
+                          Text(
+                            'File: ${data['fileName']}', // Assuming you have 'fileName' in Firestore
+                            style: TextStyle(color: Colors.blue),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ChatBubble(
+                message: data['message'],
+                isCurrentUser: isCurrentUser,
+                imageUrl: hasImage ? data['imageUrl'] : null,
+                fileUrl: hasFile ? data['fileUrl'] : null,
+              ),
+            ],
+          );
+        }).toList(),
+      );
+    },
+  );
+}
+
 
   Widget _buildUserInput() {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 50.0),
+      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: TextField(
-                controller: _messageController,
-                decoration: const InputDecoration(
-                  hintText: "Type a message",
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(vertical: 12.0),
-                ),
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 10.0),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(30.0),
+                color: Colors.grey[200],
+              ),
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: _sendImage,
+                    icon: Icon(Icons.image),
+                    color: Colors.blue,
+                  ),
+                  IconButton(
+                    onPressed: _sendFile,
+                    icon: Icon(Icons.attach_file),
+                    color: Colors.blue,
+                  ),
+                  Expanded(
+                    child: TextField(
+                      controller: _messageController,
+                      keyboardType: TextInputType.multiline,
+                      maxLines: null,
+                      decoration: InputDecoration.collapsed(
+                        hintText: 'Type a message...',
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-          SizedBox(width: 16),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.yellow,
-              borderRadius: BorderRadius.circular(30),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: IconButton(
-              onPressed: sendMessages,
-              icon: const Icon(
-                Icons.send,
-                color: Color.fromARGB(255, 0, 0, 0),
-              ),
-            ),
+          IconButton(
+            icon: Icon(Icons.send),
+            color: Colors.blue,
+            onPressed: _sendMessage,
           ),
         ],
       ),

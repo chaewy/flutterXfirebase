@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/models/post.dart';
 import 'package:flutter_application_1/models/user.dart';
-import 'package:flutter_application_1/pages/comment_page.dart';
+import 'package:flutter_application_1/pages/post/comment_page.dart';
 import 'package:flutter_application_1/pages/post/FullImage_page.dart';
 import 'package:flutter_application_1/profile/profile_page.dart';
 import 'package:flutter_application_1/services/add_post.dart';
 import 'package:flutter_application_1/services/user.dart';
+import 'package:share_plus/share_plus.dart';
 
 class ListPost extends StatefulWidget {
   @override
@@ -106,13 +107,13 @@ class _PostItemState extends State<PostItem> {
           child: Image.network(
             imageUrls.first,
             fit: BoxFit.cover,
-            height: MediaQuery.of(context).size.height * 0.3, // Adjust the height as needed
+            height: MediaQuery.of(context).size.height * 0.2, // Reduced height for single image
           ),
         ),
       );
     } else {
       return Container(
-        height: MediaQuery.of(context).size.height * 0.3, // Adjust the height as needed
+        height: MediaQuery.of(context).size.height * 0.2, // Reduced height for multiple images
         child: PageView.builder(
           itemCount: imageUrls.length,
           itemBuilder: (context, index) {
@@ -157,119 +158,61 @@ class _PostItemState extends State<PostItem> {
         } else {
           final user = userSnapshot.data!;
           return Padding(
-            padding: EdgeInsets.fromLTRB(10.0, 8.0, 16.0, 0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+            padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0), // Adjusted padding
+            child: Card(
+              elevation: 2, // Reduced elevation for a subtler shadow
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0), // Adjusted padding inside card
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ProfilePage(user: user),
+                              ),
+                            );
+                          },
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                backgroundImage: NetworkImage(user.profileImageUrl),
+                                radius: 20, // Adjust the radius of the profile image
+                              ),
+                              SizedBox(width: 10),
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ProfilePage(user: user),
+                                    ),
+                                  );
+                                },
+                                child: Text(
+                                  user.name,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8.0),
+                    // Display title with GestureDetector for navigation
                     GestureDetector(
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ProfilePage(user: user),
-                          ),
-                        );
-                      },
-                      child: Row(
-                        children: [
-                          CircleAvatar(
-                            backgroundImage: NetworkImage(user.profileImageUrl),
-                            radius: 20, // Adjust the radius of the profile image
-                          ),
-                          SizedBox(width: 10),
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => ProfilePage(user: user),
-                                ),
-                              );
-                            },
-                            child: Text(
-                              user.name,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 8.0),
-                // Display title with GestureDetector for navigation
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => CommentPage(post: post),
-                      ),
-                    );
-                  },
-                  child: Text(
-                    post.title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                  ),
-                ),
-                SizedBox(height: 8.0),
-                // Display images
-                _buildImages(context, post.imageUrls),
-                SizedBox(height: 8.0),
-                // Display description
-                Text(
-                  post.timestamp.toDate().toString(),
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 12.0,
-                  ),
-                ),
-                SizedBox(height: 8.0),
-                Row(
-                  children: [
-                    ValueListenableBuilder<bool>(
-                      valueListenable: isLikedNotifier,
-                      builder: (context, isLiked, child) {
-                        return IconButton(
-                          icon: Icon(
-                            isLiked ? Icons.favorite : Icons.favorite_border,
-                            color: isLiked ? Colors.red : Colors.blue,
-                            size: 30.0,
-                          ),
-                          onPressed: () async {
-                            // Update the like status in Firestore
-                            await widget.postService.likePost(post, isLiked);
-
-                            // Update the like count in Firestore
-                            final updatedLikeCount = isLiked ? likeCountNotifier.value - 1 : likeCountNotifier.value + 1;
-                            isLikedNotifier.value = !isLiked;
-                            likeCountNotifier.value = updatedLikeCount;
-                          },
-                        );
-                      },
-                    ),
-                    ValueListenableBuilder<int>(
-                      valueListenable: likeCountNotifier,
-                      builder: (context, likeCount, child) {
-                        return Text('$likeCount Likes'); // Display like count
-                      },
-                    ),
-                    SizedBox(width: 50),
-                    IconButton(
-                      icon: const Icon(
-                        Icons.chat_bubble,
-                        color: Colors.green, // Customize the color of the comment icon
-                        size: 30.0,
-                      ),
-                      onPressed: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -277,10 +220,90 @@ class _PostItemState extends State<PostItem> {
                           ),
                         );
                       },
+                      child: Text(
+                        post.title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16, // Reduced font size for title
+                        ),
+                      ),
                     ),
+                    SizedBox(height: 8.0),
+                    // Display images
+                    _buildImages(context, post.imageUrls),
+                    SizedBox(height: 8.0),
+                    // Display description
+                    Text(
+                      post.timestamp.toDate().toString(),
+                      style: const TextStyle(
+                        color: Colors.grey,
+                        fontSize: 12.0,
+                      ),
+                    ),
+                    SizedBox(height: 8.0),
+                   Row(
+                    children: [
+                      ValueListenableBuilder<bool>(
+                        valueListenable: isLikedNotifier,
+                        builder: (context, isLiked, child) {
+                          return IconButton(
+                            icon: Icon(
+                              isLiked ? Icons.favorite : Icons.favorite_border,
+                              color: isLiked ? Colors.red : Colors.blue,
+                              size: 20.0, // Reduced size of the icon
+                            ),
+                            onPressed: () async {
+                              // Update the like status in Firestore
+                              await widget.postService.likePost(post, isLiked);
+
+                              // Update the like count in Firestore
+                              final updatedLikeCount =
+                                  isLiked ? likeCountNotifier.value - 1 : likeCountNotifier.value + 1;
+                              isLikedNotifier.value = !isLiked;
+                              likeCountNotifier.value = updatedLikeCount;
+                            },
+                          );
+                        },
+                      ),
+                      ValueListenableBuilder<int>(
+                        valueListenable: likeCountNotifier,
+                        builder: (context, likeCount, child) {
+                          return Text('$likeCount Likes', style: const TextStyle(fontSize: 14)); // Display like count with smaller font
+                        },
+                      ),
+                      SizedBox(width: 50), // Reduced space between icons
+                      IconButton(
+                        icon: const Icon(
+                          Icons.chat_bubble,
+                          color: Color.fromARGB(255, 175, 76, 145), // Customize the color of the comment icon
+                          size: 20.0, // Reduced size of the icon
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => CommentPage(post: post),
+                            ),
+                          );
+                        },
+                      ),
+                      SizedBox(width: 50),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.share,
+                          size: 20.0,
+                          color: Colors.green, // Customize the color if needed
+                        ),
+                        onPressed: () {
+                          // Implement share functionality
+                        },
+                      ),
+                    ],
+                  ),
+
                   ],
                 ),
-              ],
+              ),
             ),
           );
         }

@@ -21,6 +21,16 @@ class UserService {
         profileImageUrl: doc['profileImageUrl'] ?? '',
         bannerImageUrl: doc['bannerImageUrl'] ?? '',
         email: doc['email'] ?? '',
+        gender: doc['gender'] ?? '',
+        streetName: doc['streetName'] ?? '',
+        town: doc['town'] ?? '',
+        region: doc['region'] ?? '',
+        state: doc['state'] ?? '',
+
+  //         String streetName;
+  // String town;
+  // String region;
+  // String state;
       );
     }).toList();
 
@@ -40,9 +50,11 @@ class UserService {
       email: data['email'] ?? '',
       bio: data['bio'] ?? '',
       birthday: data['birthday'] ?? '',
-      location: data['location'] ?? '',
-      education: data['education'] ?? '',
-      hobby: data['hobby'] ?? '',
+      gender: data['gender'] ?? '',
+      streetName: data['streetName'] ?? '',
+      town: data['town'] ?? '',
+      region: data['region'] ?? '',
+      state: data['state'] ?? '',
     );
   } else {
     throw Exception('User document does not exist');
@@ -62,6 +74,11 @@ Stream<UserModel> getUserInfo(uid){
   //.map(_userFromFirebaseSnapshot);
   .map((snapshot) => _userFromFirebaseSnapshot(snapshot));
 }
+
+
+
+
+
 
 
 //-----------------------------------------------------------------------------------------------------
@@ -151,9 +168,13 @@ Future<void> updateProfile({
   String? name,
   String? bio,
   String? birthday,
-  String? location,
-  String? education,
-  String? hobby,
+  String? gender,
+  String? streetName,
+  String? town,
+  String? region,
+  String? state,
+
+  // streetName town region state
 }) async {
   final userCollection = FirebaseFirestore.instance.collection("Users");
   final currentUser = FirebaseAuth.instance.currentUser;
@@ -165,9 +186,11 @@ Future<void> updateProfile({
   name ??= existingData['name'];
   bio ??= existingData['bio'];
   birthday ??= existingData['birthday'];
-  location ??= existingData['location'];
-  education ??= existingData['education'];
-  hobby ??= existingData['hobby'];
+  gender ??= existingData['gender'];
+  streetName ??= existingData['streetName'];
+  town ??= existingData['town'];
+  region ??= existingData['region'];
+  state ??= existingData['state'];
 
   String? bannerImageUrl;
   String? profileImageUrl;
@@ -190,9 +213,13 @@ Future<void> updateProfile({
     'name': name,
     'bio': bio,
     'birthday': birthday,
-    'location': location,
-    'education': education,
-    'hobby': hobby,
+    'gender': gender,
+    'streetName': streetName,
+    'town': town,
+    'region': region,
+    'state': state,
+
+
   };
 
   if (bannerImageUrl != null) data['bannerImageUrl'] = bannerImageUrl;

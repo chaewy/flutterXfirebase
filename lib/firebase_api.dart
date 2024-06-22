@@ -165,13 +165,22 @@ Future<String?> getFCMToken() async {
 
 Future<void> sendNotification(String token, String title, String body, String type, String senderId) async {
   try {
-    final details = {
-      'type': type,
-      'senderId': senderId,
-      'message': body,
+
+
+    final payload = {
+      'to': token, 
+      'notification': {
+        'title': title,
+        'body': body,
+      },
+      'data': {
+        'type': type,
+        'senderId': senderId,
+      },
     };
 
-    print('Sending notification to token: $token, with payload: $details');
+
+    print('Sending notification to token: $token, with payload: $payload');
     _localNotifications.show(
       0,
       title,
@@ -185,7 +194,7 @@ Future<void> sendNotification(String token, String title, String body, String ty
           icon: '@drawable/ic_launcher',
         ),
       ),
-      payload: jsonEncode(details),
+      payload: jsonEncode(payload),
     );
   } catch (e) {
     print('Failed to send notification: $e');

@@ -8,10 +8,14 @@ class UserModel {
   final String email;
   final String bio;
   final String birthday;
-  final String location;
-  final String education;
-  final String hobby;
   final String fcmToken; // New field to store FCM token
+  String gender; // Add gender field
+  String streetName;
+  String town;
+  String region;
+  String state;
+ 
+  
 
   UserModel({
     required this.uid,
@@ -21,10 +25,12 @@ class UserModel {
     required this.email,
     this.bio = '',
     this.birthday = '',
-    this.location = '',
-    this.education = '',
-    this.hobby = '',
     this.fcmToken = '', // Initialize with empty string
+    required this.gender,
+    required this.streetName,
+    required this.town,
+    required this.region,
+    required this.state,
   });
 
   // Factory constructor to create a UserModel from a DocumentSnapshot
@@ -39,10 +45,12 @@ class UserModel {
       email: data['email'] ?? '',
       bio: data['bio'] ?? '',
       birthday: data['birthday'] ?? '',
-      location: data['location'] ?? '',
-      education: data['education'] ?? '',
-      hobby: data['hobby'] ?? '',
+      gender: data['gender'] ?? '',
       fcmToken: data['fcmToken'] ?? '', // Populate FCM token from data
+      streetName: data['streetName'] ?? '',
+      town: data['town'] ?? '',
+      region: data['region'] ?? '',
+      state: data['state'] ?? '',
     );
   }
 }

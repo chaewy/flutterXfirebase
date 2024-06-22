@@ -2,6 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/models/event.dart';
 import 'package:flutter_application_1/models/user.dart';
+import 'package:flutter_application_1/pages/events/editEvent.dart';
+import 'package:flutter_application_1/pages/events/participant.dart';
 import 'package:flutter_application_1/profile/profile_page.dart';
 import 'package:flutter_application_1/services/add_post.dart';
 import 'package:flutter_application_1/services/user.dart';
@@ -36,9 +38,115 @@ class _EventDetailsState extends State<EventDetails> {
 
   @override
   Widget build(BuildContext context) {
+
+    bool isCurrentUserCreator = widget.event.creator == userId;
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('Event Details'),
+        actions: [
+    if (isCurrentUserCreator)
+
+
+
+      PopupMenuButton<String>(
+  onSelected: (value) async {
+    if (value == 'edit') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => EditEventPage(event: widget.event),
+        ),
+      );
+    } else if (value == 'delete') {
+      // Confirm before deleting
+      bool confirmDelete = await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Confirm Delete'),
+            content: Text('Are you sure you want to delete this event?'),
+            actions: <Widget>[
+              TextButton(
+                child: Text('Cancel'),
+                onPressed: () {
+                  Navigator.of(context).pop(false);
+                },
+              ),
+              TextButton(
+                child: Text('Delete'),
+                onPressed: () {
+                  Navigator.of(context).pop(true);
+                },
+              ),
+            ],
+          );
+        },
+      );
+
+      if (confirmDelete) {
+        try {
+          await PostService().deleteEvent(widget.event.id);
+          // Navigate back to the previous page or show a confirmation
+          Navigator.pop(context);
+        } catch (e) {
+          // Handle error if needed
+          print('Error deleting event: $e');
+        }
+      }
+    }
+  },
+  itemBuilder: (BuildContext context) {
+    return [
+      PopupMenuItem(
+        value: 'edit',
+        child: Text('Edit'),
+      ),
+      PopupMenuItem(
+        value: 'delete',
+        child: Text('Delete'),
+      ),
+    ];
+  },
+),
+
+
+
+
+
+          if (!isCurrentUserCreator)
+            IconButton(
+              icon: Icon(Icons.save),
+              onPressed: () {
+                // Handle save action
+                // For example, show a dialog or perform some action
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text('Save Event'),
+                      content: Text('Do you want to save this event?'),
+                      actions: <Widget>[
+                        TextButton(
+                          child: Text('Cancel'),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                        TextButton(
+                          child: Text('Save'),
+                          onPressed: () {
+                            // Perform save action here
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+            ),
+        ],
       ),
       body: SingleChildScrollView(
         child: FutureBuilder<UserModel>(
@@ -53,49 +161,11 @@ class _EventDetailsState extends State<EventDetails> {
             } else {
               final user = snapshot.data!;
               return Padding(
-                padding: const EdgeInsets.all(10.0),
+                padding: const EdgeInsets.all(15.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        const Text(
-                          'Posted by ',
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ProfilePage(user: user),
-                              ),
-                            );
-                          },
-                          child: Text(
-                            user.name,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              decoration: TextDecoration.underline,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      widget.event.title,
-                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Location: ${widget.event.streetName}, ${widget.event.town}, ${widget.event.region}, ${widget.event.state}',
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                    const SizedBox(height: 8),
+
                     if (widget.event.imageUrl.isNotEmpty)
                       SizedBox(
                         height: 200,
@@ -125,12 +195,218 @@ class _EventDetailsState extends State<EventDetails> {
                           },
                         ),
                       ),
-                    const SizedBox(height: 8),
+
+                    const SizedBox(height: 10),
                     Text(
-                      '${widget.event.description}',
-                      style: const TextStyle(fontSize: 16),
+                      widget.event.title,
+                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     ),
-                    const SizedBox(height: 16),
+
+                    const SizedBox(height: 10),
+
+                    const Row(
+                    children: [
+                      SizedBox(width: 5), 
+                      Icon(Icons.calendar_today), // Calendar Icon
+                      SizedBox(width: 20), // Spacer for a little distance
+                      Text(
+                        '21', // Day
+                        style: TextStyle(fontSize: 18),
+                      ),
+                      SizedBox(width: 4), // Spacer between day and month
+                      Text(
+                        'Jun', // Month
+                        style: TextStyle(fontSize: 18),
+                      ),
+                      SizedBox(width: 4), // Spacer between month and year
+                      Text(
+                        '2024', // Year
+                        style: TextStyle(fontSize: 18),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 5),
+                  const Divider(
+                    color: Colors.grey,
+                    height: 20,
+                    thickness: 1,
+                    indent: 0,
+                    endIndent: 20,
+                  ),
+                  const SizedBox(height: 5),
+
+                  Row(
+                    children: [
+                      SizedBox(width: 5), 
+                      GestureDetector(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return Dialog(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(20.0),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Location",
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      SizedBox(height: 10),
+                                      Text(
+                                        '${widget.event.streetName}, ${widget.event.town}, ${widget.event.region}, ${widget.event.state}',
+                                        style: TextStyle(fontSize: 14),
+                                      ),
+                                      SizedBox(height: 20),
+                                      Align(
+                                        alignment: Alignment.center,
+                                        child: TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: Text('Close'),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                        
+                        child: Icon(Icons.location_pin),
+                      ),
+                      SizedBox(width: 20),
+                      Text(
+                        '${widget.event.region},',
+                        style: TextStyle(fontSize: 17),
+                      ),
+                      SizedBox(width: 4),
+                      Text(
+                        '${widget.event.state}',
+                        style: TextStyle(fontSize: 17),
+                      ),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 5),
+                  const Divider(
+                    color: Colors.grey,
+                    height: 20,
+                    thickness: 1,
+                    indent: 0,
+                    endIndent: 20,
+                  ),
+
+                  const SizedBox(height: 5),
+
+                  const Row(
+                    children: [
+                      SizedBox(width: 5),
+                      Text(
+                        'About',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 8),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 5), // Adjust height between single-line and multi-line text
+                      Text(
+                        '${widget.event.description}',
+                        style: const TextStyle(fontSize: 15),
+                        textAlign: TextAlign.justify,
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 5),
+                  const Divider(
+                    color: Colors.grey,
+                    height: 20,
+                    thickness: 1,
+                    indent: 0,
+                    endIndent: 20,
+                  ),
+                  const SizedBox(height: 5),
+
+                 Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () async {
+                          // Fetch participants using PostService
+                          List<Map<String, dynamic>> participants = await _postService.fetchParticipants(widget.event.id);
+
+                          // Navigate to participant page and pass participants data
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ParticipantsPage(participants: participants),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          padding: EdgeInsets.all(8.0),
+                          alignment: Alignment.center,
+                          child: Row(
+                            children: [
+                              Text(
+                                'Participants join:  ',
+                                style: TextStyle(fontSize: 18.0),
+                              ),
+                              FutureBuilder<List<Map<String, dynamic>>>(
+                                future: _postService.fetchParticipants(widget.event.id),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState == ConnectionState.waiting) {
+                                    return CircularProgressIndicator();
+                                  } else if (snapshot.hasError) {
+                                    return Text('Error: ${snapshot.error}');
+                                  } else {
+                                    List<Map<String, dynamic>> participants = snapshot.data!;
+                                    return Text(
+                                      '${participants.length}',
+                                      style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+                                    );
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+
+                const SizedBox(height: 5),
+                  const Divider(
+                    color: Colors.grey,
+                    height: 20,
+                    thickness: 1,
+                    indent: 0,
+                    endIndent: 20,
+                  ),
+
+                  const SizedBox(height: 5),
+                    const SizedBox(height: 10),
                     FutureBuilder<List<UserModel>>(
                       future: _participantsFuture,
                       builder: (context, snapshot) {
@@ -147,66 +423,40 @@ class _EventDetailsState extends State<EventDetails> {
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
                                 if (isParticipant)
-                                  ElevatedButton(
-                                    onPressed: () async {
-                                      await _postService.leaveEvent(widget.event, userId);
-                                      JoinEventSnackbar.showLeftEvent(context);
-                                      await _refreshParticipants();
-                                    },
-                                    child: const Text('Leave Event'),
-                                    style: ButtonStyle(
-                                      backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
-                                      foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+                                   SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      onPressed: () async {
+                                        await _postService.leaveEvent(widget.event, userId);
+                                        JoinEventSnackbar.showLeftEvent(context);
+                                        await _refreshParticipants();
+                                      },
+                                      child: const Text('Leave Event'),
+                                      style: ButtonStyle(
+                                        backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
+                                        foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+                                      ),
                                     ),
                                   )
-                                else
-                                  ElevatedButton(
-                                    onPressed: () async {
-                                      bool alreadyJoined = await _postService.joinEvent(widget.event);
-                                      JoinEventSnackbar.showSuccessOrAlreadyJoined(context, alreadyJoined);
-                                      await _refreshParticipants();
-                                    },
-                                    child: const Text('Join Event'),
-                                    style: ButtonStyle(
-                                      backgroundColor: MaterialStateProperty.all<Color>(Colors.yellow),
-                                      foregroundColor: MaterialStateProperty.all<Color>(Colors.black),
+                                                    else
+                                                      SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      onPressed: () async {
+                                        bool alreadyJoined = await _postService.joinEvent(widget.event);
+                                        JoinEventSnackbar.showSuccessOrAlreadyJoined(context, alreadyJoined);
+                                        await _refreshParticipants();
+                                      },
+                                      child: const Text('Join Event'),
+                                      style: ButtonStyle(
+                                        backgroundColor: MaterialStateProperty.all<Color>(Colors.yellow),
+                                        foregroundColor: MaterialStateProperty.all<Color>(Colors.black),
+                                      ),
                                     ),
                                   ),
-                                const SizedBox(height: 24),
-                                const Text(
-                                  'Users who joined the event:',
-                                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(height: 8),
-                                ListView(
-                                  shrinkWrap: true,
-                                  children: participants.map((participant) {
-                                    return ListTile(
-                                      contentPadding: EdgeInsets.zero,
-                                      leading: SizedBox(
-                                        width: 48,
-                                        height: 48,
-                                        child: CircleAvatar(
-                                          backgroundImage: NetworkImage(participant.profileImageUrl),
-                                          backgroundColor: Colors.grey[300],
-                                        ),
-                                      ),
-                                      title: Text(
-                                        participant.name,
-                                        style: const TextStyle(fontSize: 16),
-                                        textAlign: TextAlign.start,
-                                      ),
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => ProfilePage(user: participant),
-                                          ),
-                                        );
-                                      },
-                                    );
-                                  }).toList(),
-                                ),
+
+
+
                               ],
                             ),
                           );

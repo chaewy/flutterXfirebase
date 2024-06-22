@@ -1,7 +1,10 @@
+// screens/edit.dart
+
+import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_application_1/models/user.dart';
+import 'package:flutter_application_1/pages/map_search.dart';
 import 'package:flutter_application_1/services/user.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -21,9 +24,8 @@ class _EditState extends State<Edit> {
   late TextEditingController _nameController;
   late TextEditingController _bioController;
   late TextEditingController _birthdayController;
-  late TextEditingController _locationController;
-  late TextEditingController _educationController;
-  late TextEditingController _hobbyController;
+  String _selectedGender = 'Male'; // Default value for gender
+  Map<String, String>? _selectedAddress;
 
   @override
   void initState() {
@@ -31,9 +33,6 @@ class _EditState extends State<Edit> {
     _nameController = TextEditingController();
     _bioController = TextEditingController();
     _birthdayController = TextEditingController();
-    _locationController = TextEditingController();
-    _educationController = TextEditingController();
-    _hobbyController = TextEditingController();
     _fetchUserData();
   }
 
@@ -42,9 +41,6 @@ class _EditState extends State<Edit> {
     _nameController.dispose();
     _bioController.dispose();
     _birthdayController.dispose();
-    _locationController.dispose();
-    _educationController.dispose();
-    _hobbyController.dispose();
     super.dispose();
   }
 
@@ -57,9 +53,7 @@ class _EditState extends State<Edit> {
         _nameController.text = _currentUser!.name;
         _bioController.text = _currentUser!.bio;
         _birthdayController.text = _currentUser!.birthday;
-        _locationController.text = _currentUser!.location;
-        _educationController.text = _currentUser!.education;
-        _hobbyController.text = _currentUser!.hobby;
+        _selectedGender = _currentUser!.gender;
       });
     }
   }
@@ -104,6 +98,41 @@ class _EditState extends State<Edit> {
     );
   }
 
+  void _onGenderChanged(String? value) {
+  if (value != null) {
+    setState(() {
+      _selectedGender = value;
+    });
+  }
+}
+
+ Future<void> _selectDate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null && picked != DateTime.now()) {
+      setState(() {
+        _birthdayController.text = picked.toString(); // Adjust date format as needed
+      });
+    }
+  }
+
+  String _formatDate(String dateString) {
+  // Parse the dateString into a DateTime object
+  DateTime? selectedDate = DateTime.tryParse(dateString);
+
+  if (selectedDate != null) {
+    // Format the DateTime into a string with year, month, and day
+    return '${selectedDate.year}-${selectedDate.month}-${selectedDate.day}';
+  } else {
+    return 'Select Date';
+  }
+}
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -118,15 +147,18 @@ class _EditState extends State<Edit> {
                 name: _nameController.text,
                 bio: _bioController.text,
                 birthday: _birthdayController.text,
-                location: _locationController.text,
-                education: _educationController.text,
-                hobby: _hobbyController.text,
+                streetName: _selectedAddress?['streetName'], // Use ':' for named argument assignment
+                town: _selectedAddress?['town'],
+                region: _selectedAddress?['region'],
+                state: _selectedAddress?['state'],
+                gender: _selectedGender,
               );
               Navigator.pop(context);
             },
-            child: Text('Save', style: TextStyle(color: Colors.white)),
+            child: Text('Save', style: TextStyle(color: Color.fromARGB(255, 255, 175, 16))),
           )
         ],
+
       ),
       body: _currentUser == null
           ? Center(child: CircularProgressIndicator())
@@ -150,6 +182,20 @@ class _EditState extends State<Edit> {
                         : Icon(Icons.image, size: 100)
                       : Image.file(_bannerImage!, height: 100),
                   ),
+                  
+                  DropdownButtonFormField<String>(
+  value: _selectedGender,
+  onChanged: _onGenderChanged,
+  items: ['Male', 'Female', 'Other'].map((String value) {
+    return DropdownMenuItem<String>(
+      value: value,
+      child: Text(value),
+    );
+  }).toList(),
+  decoration: InputDecoration(labelText: 'Gender'),
+),
+
+
                   TextFormField(
                     controller: _nameController,
                     decoration: InputDecoration(labelText: 'Name'),
@@ -158,25 +204,90 @@ class _EditState extends State<Edit> {
                     controller: _bioController,
                     decoration: InputDecoration(labelText: 'Bio'),
                   ),
-                  TextFormField(
-                    controller: _birthdayController,
-                    decoration: InputDecoration(labelText: 'Birthday'),
-                  ),
-                  TextFormField(
-                    controller: _locationController,
-                    decoration: InputDecoration(labelText: 'Location'),
-                  ),
-                  TextFormField(
-                    controller: _educationController,
-                    decoration: InputDecoration(labelText: 'Education'),
-                  ),
-                  TextFormField(
-                    controller: _hobbyController,
-                    decoration: InputDecoration(labelText: 'Hobby'),
-                  ),
+                  Row(
+  children: [
+    Icon(Icons.calendar_today),
+    SizedBox(width: 10),
+    Flexible( // or Expanded
+      child: TextButton(
+        onPressed: _selectDate,
+        child: Text(
+          'Birthday: ${_birthdayController.text.isEmpty ? "Select Date" : _formatDate(_birthdayController.text)}',
+          style: TextStyle(fontSize: 16),
+          overflow: TextOverflow.ellipsis, // Optional: Handle overflow gracefully
+          maxLines: 1, // Optional: Limit to a single line
+        ),
+      ),
+    ),
+  ],
+),
+
+                  
+                 Row(
+  children: [
+    Icon(Icons.location_pin),
+    SizedBox(width: 10),
+    ElevatedButton(
+      onPressed: () async {
+        final selectedAddress = await Navigator.push<Map<String, String>>(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MapSearch(
+              onAddressSelected: (components) {
+                setState(() {
+                  _selectedAddress = components;
+                });
+              },
+            ),
+          ),
+        );
+      },
+      child: const Text("Add Location"),
+      style: ButtonStyle(
+        backgroundColor: MaterialStateProperty.all<Color>(const Color.fromARGB(255, 243, 20, 154)),
+        foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+      ),
+    ),
+  ],
+),
+
+// Display selected address below the row
+if (_selectedAddress != null) ...[
+  SizedBox(height: 16.0), // Adjust the height as per your design
+  Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        'Selected Address:',
+        style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+      ),
+      SizedBox(height: 4.0),
+      Text(
+        'Street Name: ${_selectedAddress!['streetName']}',
+        style: TextStyle(fontSize: 16.0),
+      ),
+      Text(
+        'Town/City: ${_selectedAddress!['town']}',
+        style: TextStyle(fontSize: 16.0),
+      ),
+      Text(
+        'Region: ${_selectedAddress!['region']}',
+        style: TextStyle(fontSize: 16.0),
+      ),
+      Text(
+        'State: ${_selectedAddress!['state']}',
+        style: TextStyle(fontSize: 16.0),
+      ),
+    ],
+  ),
+],
+
+
+
                 ],
               ),
             ),
     );
   }
+  
 }

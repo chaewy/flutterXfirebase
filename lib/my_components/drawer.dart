@@ -2,7 +2,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/auth/main_page.dart';
+import 'package:flutter_application_1/community/add_community.dart';
 import 'package:flutter_application_1/models/user.dart';
+import 'package:flutter_application_1/my_components/test.dart';
 import 'package:flutter_application_1/pages/home_page.dart';
 import 'package:flutter_application_1/pages/setting_page.dart';
 import 'package:flutter_application_1/profile/profile_page.dart';
@@ -60,6 +62,20 @@ class MyDrawer extends StatelessWidget {
                   },
                 ),
               ),
+              Padding(
+                padding: const EdgeInsets.only(left: 25.0),
+                child: ListTile(
+                  leading: Icon(Icons.home),
+                  title: Text('T E S T'),
+                  onTap: () {
+                    Navigator.pop(context); // Close the drawer
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => FacebookPostPage()),
+                    );
+                  },
+                ),
+              ),
 
               //profile
               Padding(
@@ -76,6 +92,21 @@ class MyDrawer extends StatelessWidget {
                   }
                 ),
               ),
+
+              Padding(
+                padding: const EdgeInsets.only(left: 25.0),
+                child: ListTile(
+                  leading: Icon(Icons.group),
+                  title: Text('CREATE COMMUNITY'),
+                  onTap: () async {
+                    Navigator.pop(context); // Close the drawer
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => CreateCommunityPage(),
+                    ));
+                  }
+                ),
+              ),
+
             ],
           ),
           //logout

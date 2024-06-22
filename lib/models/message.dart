@@ -5,13 +5,17 @@ class Message {
   final String senderEmail;
   final String? receiverID; // Make receiverID optional
   final String message;
+  final String? imageUrl; // Optional imageUrl field
+  final String? fileUrl; // Optional fileUrl field
   final Timestamp timestamp;
 
   Message({
     required this.senderID,
     required this.senderEmail,
-    this.receiverID, // Update the constructor
+    this.receiverID,
     required this.message,
+    this.imageUrl,
+    this.fileUrl,
     required this.timestamp,
   });
 
@@ -21,6 +25,8 @@ class Message {
       'senderEmail': senderEmail,
       'receiverID': receiverID,
       'message': message,
+      'imageUrl': imageUrl,
+      'fileUrl': fileUrl,
       'timestamp': timestamp,
     };
   }
@@ -31,6 +37,8 @@ class Message {
       senderEmail: map['senderEmail'],
       receiverID: map['receiverID'],
       message: map['message'],
+      imageUrl: map['imageUrl'],
+      fileUrl: map['fileUrl'],
       timestamp: map['timestamp'],
     );
   }
