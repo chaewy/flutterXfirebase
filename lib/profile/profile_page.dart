@@ -1,5 +1,5 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_application_1/models/user.dart';
 import 'package:flutter_application_1/pages/chat/chat_page.dart';
 import 'package:flutter_application_1/pages/post/follow_unfollow.dart';
@@ -21,8 +21,11 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String? uid = FirebaseAuth.instance.currentUser?.uid;
+    String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
     UserService _userService = UserService();
+
+    print('Current User ID: $currentUserId');
+    print('Profile User ID: ${user.uid}');
 
     return Scaffold(
       body: StreamBuilder<UserModel>(
@@ -38,6 +41,8 @@ class ProfilePage extends StatelessWidget {
               return Center(child: Text('User data is null'));
             }
 
+            print('User Profile: ${userProfile.name}');
+
             return DefaultTabController(
               length: 4, // Number of tabs
               child: NestedScrollView(
@@ -45,9 +50,9 @@ class ProfilePage extends StatelessWidget {
                   return [
                     SliverAppBar(
                       leading: IconButton(
-                        icon: Icon(Icons.arrow_back, color: Colors.black), // Set the color here
+                        icon: Icon(Icons.arrow_back, color: Colors.black),
                         onPressed: () {
-                          Navigator.pop(context); // Pop the current screen when back button is pressed
+                          Navigator.pop(context);
                         },
                       ),
                       floating: false,
@@ -87,28 +92,52 @@ class ProfilePage extends StatelessWidget {
                                         height: 60,
                                         width: 60,
                                       ),
-                                      SizedBox(width: 10),
-                                      if (FirebaseAuth.instance.currentUser?.uid != userProfile.uid)
-                                        TextButton(
-                                          style: TextButton.styleFrom(
-                                            side: BorderSide(color: Colors.white),
-                                          ),
-                                          onPressed: () {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) => ChatPage(
-                                                  receiverName: userProfile.name,
-                                                  receiverID: userProfile.uid,
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                          child: Text('Chat', style: TextStyle(color: Colors.white)),
-                                        ),
+                                      SizedBox(width: 20),
+
+                                      Container(
+                                        height: 40,
+  decoration: BoxDecoration(
+    borderRadius: BorderRadius.circular(20), // Adjust the value to change the oval shape
+  ),
+  child: TextButton(
+    onPressed: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChatPage(
+            receiverName: userProfile.name,
+            receiverID: userProfile.uid,
+          ),
+        ),
+      );
+    },
+    style: ButtonStyle(
+      backgroundColor: MaterialStateProperty.all<Color>(Color.fromARGB(255, 255, 187, 0)), // Make button transparent
+      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+        RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24), // Same value as Container's borderRadius
+        ),
+      ),
+    ),
+    child: const Padding(
+      padding: EdgeInsets.symmetric(vertical: 3.0, horizontal: 14.0),
+      child: Text(
+        'Chat',
+        style: TextStyle(
+          color: Color.fromARGB(255, 255, 255, 255), // Text color
+          fontWeight: FontWeight.bold, // Make the text bold
+          fontSize: 14, // Optional: Adjust font size if needed
+        ),
+      ),
+    ),
+  ),
+),
+
+
+
                                     ],
                                   ),
-                                  if (FirebaseAuth.instance.currentUser!.uid == user.uid)
+                                  if (currentUserId == user.uid)
                                     Padding(
                                       padding: EdgeInsets.only(right: 20),
                                       child: TextButton(
@@ -125,9 +154,9 @@ class ProfilePage extends StatelessWidget {
                                         child: Text('Edit profile'),
                                       ),
                                     ),
-                                  if (FirebaseAuth.instance.currentUser?.uid != user.uid)
+                                  if (currentUserId != user.uid)
                                     FollowStatusWidget(
-                                      currentUserId: FirebaseAuth.instance.currentUser!.uid,
+                                      currentUserId: currentUserId!,
                                       profileUserId: user.uid,
                                     ),
                                 ],
@@ -173,7 +202,7 @@ class ProfilePage extends StatelessWidget {
                                   ),
                                   SizedBox(width: 40),
                                   Icon(
-                                    FontAwesomeIcons.cakeCandles,
+                                    FontAwesomeIcons.cake,
                                     size: 18.0,
                                     color: Theme.of(context).colorScheme.onSecondary,
                                   ),
@@ -190,7 +219,7 @@ class ProfilePage extends StatelessWidget {
                             ),
                             SizedBox(height: 15),
                             Container(
-                              color : Theme.of(context).colorScheme.secondary,
+                              color: Theme.of(context).colorScheme.secondary,
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [

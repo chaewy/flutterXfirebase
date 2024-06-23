@@ -99,54 +99,64 @@ class Chat extends StatelessWidget {
     );
   }
 
-  Widget _buildEventChat(BuildContext context) {
-    return FutureBuilder<UserModel>(
-      future: _getCurrentUser(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
+ Widget _buildEventChat(BuildContext context) {
+  return FutureBuilder<UserModel>(
+    future: _getCurrentUser(),
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return Center(child: CircularProgressIndicator());
+      }
 
-        if (snapshot.hasError) {
-          return Center(child: Text('Error retrieving user ID: ${snapshot.error}'));
-        }
+      if (snapshot.hasError) {
+        return Center(child: Text('Error retrieving user ID: ${snapshot.error}'));
+      }
 
-        final String userId = snapshot.data!.uid;
+      final String userId = snapshot.data!.uid;
 
-        return StreamBuilder<List<EventModel>>(
-          stream: _postService.getEventList(),
-          builder: (context, snapshot) {
-            if (snapshot.hasError) {
-              return Center(child: Text('Error fetching events: ${snapshot.error}'));
-            }
+      return StreamBuilder<List<EventModel>>(
+        stream: _postService.getEventList(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Center(child: Text('Error fetching events: ${snapshot.error}'));
+          }
 
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
 
-            List<EventModel> events = snapshot.data ?? [];
+          List<EventModel> events = snapshot.data ?? [];
 
-            // Filter events asynchronously based on whether the user is a participant
-            return FutureBuilder<List<EventModel>>(
-              future: _filterEvents(events, userId),
-              builder: (context, filteredSnapshot) {
-                if (filteredSnapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+          // Filter events asynchronously based on whether the user is a participant
+          return FutureBuilder<List<EventModel>>(
+            future: _filterEvents(events, userId),
+            builder: (context, filteredSnapshot) {
+              if (filteredSnapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              }
 
-                List<EventModel> filteredEvents = filteredSnapshot.data ?? [];
+              List<EventModel> filteredEvents = filteredSnapshot.data ?? [];
 
-                if (filteredEvents.isEmpty) {
-                  return const Center(child: Text('No events found for this user.'));
-                }
+              if (filteredEvents.isEmpty) {
+                return Center(child: Text('No events found for this user.'));
+              }
 
-                return ListView.builder(
-                  itemCount: filteredEvents.length,
-                  itemBuilder: (context, index) {
-                    EventModel event = filteredEvents[index];
-                    return ListTile(
-                      title: Text(event.title),
-                      subtitle: Text(event.description),
+              return ListView.builder(
+                itemCount: filteredEvents.length,
+                itemBuilder: (context, index) {
+                  EventModel event = filteredEvents[index];
+                  return Card(
+                    elevation: 3,
+                    margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    child: ListTile(
+                      contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      title: Text(
+                        event.title,
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text(
+                        event.description,
+                        style: TextStyle(fontSize: 14),
+                      ),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -158,16 +168,18 @@ class Chat extends StatelessWidget {
                           ),
                         );
                       },
-                    );
-                  },
-                );
-              },
-            );
-          },
-        );
-      },
-    );
-  }
+                    ),
+                  );
+                },
+              );
+            },
+          );
+        },
+      );
+    },
+  );
+}
+
 
   Future<List<EventModel>> _filterEvents(List<EventModel> events, String userId) async {
     List<EventModel> filteredEvents = [];

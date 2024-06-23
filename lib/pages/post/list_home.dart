@@ -93,7 +93,9 @@ class _PostItemState extends State<PostItem> {
   }
 
   Widget _buildImages(BuildContext context, List<String> imageUrls) {
-    if (imageUrls.length == 1) {
+    if (imageUrls.isEmpty) {
+      return SizedBox.shrink(); // Return empty SizedBox if no images
+    } else if (imageUrls.length == 1) {
       return GestureDetector(
         onTap: () {
           Navigator.push(
@@ -103,17 +105,20 @@ class _PostItemState extends State<PostItem> {
             ),
           );
         },
-        child: Center(
-          child: Image.network(
-            imageUrls.first,
-            fit: BoxFit.cover,
-            height: MediaQuery.of(context).size.height * 0.2, // Reduced height for single image
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.3, // Reduced height for single image
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10.0),
+            image: DecorationImage(
+              image: NetworkImage(imageUrls.first),
+              fit: BoxFit.cover,
+            ),
           ),
         ),
       );
     } else {
       return Container(
-        height: MediaQuery.of(context).size.height * 0.2, // Reduced height for multiple images
+        height: MediaQuery.of(context).size.height * 0.3, // Reduced height for multiple images
         child: PageView.builder(
           itemCount: imageUrls.length,
           itemBuilder: (context, index) {
@@ -126,9 +131,14 @@ class _PostItemState extends State<PostItem> {
                   ),
                 );
               },
-              child: Image.network(
-                imageUrls[index],
-                fit: BoxFit.cover,
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10.0),
+                  image: DecorationImage(
+                    image: NetworkImage(imageUrls[index]),
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
             );
           },
@@ -157,128 +167,71 @@ class _PostItemState extends State<PostItem> {
           );
         } else {
           final user = userSnapshot.data!;
-          return Padding(
-            padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0), // Adjusted padding
-            child: Card(
-              elevation: 2, // Reduced elevation for a subtler shadow
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0), // Adjusted padding inside card
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ProfilePage(user: user),
-                              ),
-                            );
-                          },
-                          child: Row(
-                            children: [
-                              CircleAvatar(
-                                backgroundImage: NetworkImage(user.profileImageUrl),
-                                radius: 20, // Adjust the radius of the profile image
-                              ),
-                              SizedBox(width: 10),
-                              GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => ProfilePage(user: user),
+          return GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CommentPage(post: post),
+                ),
+              );
+            },
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0), // Adjusted padding
+              child: Card(
+                elevation: 2, // Reduced elevation for a subtler shadow
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0), // Adjusted padding inside card
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ProfilePage(user: user),
+                                ),
+                              );
+                            },
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  backgroundImage: NetworkImage(user.profileImageUrl),
+                                  radius: 20, // Adjust the radius of the profile image
+                                ),
+                                SizedBox(width: 10),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => ProfilePage(user: user),
+                                      ),
+                                    );
+                                  },
+                                  child: Text(
+                                    user.name,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15,
                                     ),
-                                  );
-                                },
-                                child: Text(
-                                  user.name,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 8.0),
-                    // Display title with GestureDetector for navigation
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => CommentPage(post: post),
-                          ),
-                        );
-                      },
-                      child: Text(
-                        post.title,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16, // Reduced font size for title
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 8.0),
-                    // Display images
-                    _buildImages(context, post.imageUrls),
-                    SizedBox(height: 8.0),
-                    // Display description
-                    Text(
-                      post.timestamp.toDate().toString(),
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 12.0,
-                      ),
-                    ),
-                    SizedBox(height: 8.0),
-                   Row(
-                    children: [
-                      ValueListenableBuilder<bool>(
-                        valueListenable: isLikedNotifier,
-                        builder: (context, isLiked, child) {
-                          return IconButton(
-                            icon: Icon(
-                              isLiked ? Icons.favorite : Icons.favorite_border,
-                              color: isLiked ? Colors.red : Colors.blue,
-                              size: 20.0, // Reduced size of the icon
+                              ],
                             ),
-                            onPressed: () async {
-                              // Update the like status in Firestore
-                              await widget.postService.likePost(post, isLiked);
-
-                              // Update the like count in Firestore
-                              final updatedLikeCount =
-                                  isLiked ? likeCountNotifier.value - 1 : likeCountNotifier.value + 1;
-                              isLikedNotifier.value = !isLiked;
-                              likeCountNotifier.value = updatedLikeCount;
-                            },
-                          );
-                        },
+                          ),
+                        ],
                       ),
-                      ValueListenableBuilder<int>(
-                        valueListenable: likeCountNotifier,
-                        builder: (context, likeCount, child) {
-                          return Text('$likeCount Likes', style: const TextStyle(fontSize: 14)); // Display like count with smaller font
-                        },
-                      ),
-                      SizedBox(width: 50), // Reduced space between icons
-                      IconButton(
-                        icon: const Icon(
-                          Icons.chat_bubble,
-                          color: Color.fromARGB(255, 175, 76, 145), // Customize the color of the comment icon
-                          size: 20.0, // Reduced size of the icon
-                        ),
-                        onPressed: () {
+                      SizedBox(height: 8.0),
+                      // Display title with GestureDetector for navigation
+                      GestureDetector(
+                        onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -286,22 +239,80 @@ class _PostItemState extends State<PostItem> {
                             ),
                           );
                         },
-                      ),
-                      SizedBox(width: 50),
-                      IconButton(
-                        icon: const Icon(
-                          Icons.share,
-                          size: 20.0,
-                          color: Colors.green, // Customize the color if needed
+                        child: Text(
+                          post.title,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16, // Reduced font size for title
+                          ),
                         ),
-                        onPressed: () {
-                          // Implement share functionality
-                        },
+                      ),
+                      SizedBox(height: 8.0),
+                      // Display images
+                      _buildImages(context, post.imageUrls),
+                      SizedBox(height: 8.0),
+                      // Display description
+                      Text(
+                        post.timestamp.toDate().toString(),
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 12.0,
+                        ),
+                      ),
+                      SizedBox(height: 8.0),
+                      Row(
+                        children: [
+                          SizedBox(width: 30),
+                          ValueListenableBuilder<bool>(
+                            valueListenable: isLikedNotifier,
+                            builder: (context, isLiked, child) {
+                              return IconButton(
+                                icon: Icon(
+                                  isLiked ? Icons.favorite : Icons.favorite_border,
+                                  color: isLiked ? Colors.red : Colors.blue,
+                                  size: 20.0, // Reduced size of the icon
+                                ),
+                                onPressed: () async {
+                                  // Update the like status in Firestore
+                                  await widget.postService.likePost(post, isLiked);
+
+                                  // Update the like count in Firestore
+                                  final updatedLikeCount = isLiked
+                                      ? likeCountNotifier.value - 1
+                                      : likeCountNotifier.value + 1;
+                                  isLikedNotifier.value = !isLiked;
+                                  likeCountNotifier.value = updatedLikeCount;
+                                },
+                              );
+                            },
+                          ),
+                          ValueListenableBuilder<int>(
+                            valueListenable: likeCountNotifier,
+                            builder: (context, likeCount, child) {
+                              return Text('$likeCount Likes',
+                                  style: const TextStyle(fontSize: 14)); // Display like count with smaller font
+                            },
+                          ),
+                          SizedBox(width: 100), // Reduced space between icons
+                          IconButton(
+                            icon: const Icon(
+                              Icons.chat_bubble,
+                              color: Color.fromARGB(255, 175, 76, 145), // Customize the color of the comment icon
+                              size: 20.0, // Reduced size of the icon
+                            ),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CommentPage(post: post),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
                       ),
                     ],
                   ),
-
-                  ],
                 ),
               ),
             ),

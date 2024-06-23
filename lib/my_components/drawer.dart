@@ -51,27 +51,13 @@ class MyDrawer extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(left: 25.0),
                 child: ListTile(
-                  leading: Icon(Icons.home),
-                  title: Text('S E T T I N G S'),
+                  leading: Icon(Icons.wb_sunny),
+                  title: Text('T H E M E'),
                   onTap: () {
                     Navigator.pop(context); // Close the drawer
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => SettingPage()),
-                    );
-                  },
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 25.0),
-                child: ListTile(
-                  leading: Icon(Icons.home),
-                  title: Text('T E S T'),
-                  onTap: () {
-                    Navigator.pop(context); // Close the drawer
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => FacebookPostPage()),
                     );
                   },
                 ),

@@ -201,12 +201,14 @@ class PostListByUser extends StatelessWidget {
                                                 fontSize: 16,
                                               ),
                                             ),
+                                            SizedBox(height: 10),
                                             _buildImages(context, post.imageUrls),
                                             Row(
                                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                               children: [
                                                 Row(
                                                   children: [
+                                                    SizedBox(width: 40),
                                                     IconButton(
                                                       icon: Icon(
                                                         isLiked ? Icons.favorite : Icons.favorite_border,
@@ -218,7 +220,7 @@ class PostListByUser extends StatelessWidget {
                                                     ),
                                                     SizedBox(width: 4),
                                                     Text('$likeCount likes'),
-                                                    SizedBox(width: 20),
+                                                    SizedBox(width: 70),
                                                     IconButton(
                                                       icon: Icon(Icons.comment),
                                                       onPressed: () {

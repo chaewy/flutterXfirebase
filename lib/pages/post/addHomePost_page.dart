@@ -95,7 +95,14 @@ Widget build(BuildContext context) {
           style: TextButton.styleFrom(
             textStyle: TextStyle(color: Colors.white),
           ),
-          child: Text('Post'),
+          child: Text(
+    'Post',
+    style: TextStyle(
+      color: Color.fromARGB(255, 255, 175, 16),
+      fontWeight: FontWeight.bold, // Make the text bold
+      fontSize: 17, // Optional: Adjust font size if needed
+    ),
+  ),
         )
       ],
     ),
@@ -113,22 +120,6 @@ Widget build(BuildContext context) {
               labelText: 'Title',
               border: OutlineInputBorder(),
             ),
-          ),
-          SizedBox(height: 20),
-          DropdownButton<String>(
-            value: selectedCategory,
-            onChanged: (String? newValue) {
-              setState(() {
-                selectedCategory = newValue!;
-              });
-            },
-            items: <String>['Cooking', 'Drawing', 'Painting', 'Singing', 'Writing']
-                .map<DropdownMenuItem<String>>((String value) {
-              return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value),
-              );
-            }).toList(),
           ),
           SizedBox(height: 20),
           TextFormField(

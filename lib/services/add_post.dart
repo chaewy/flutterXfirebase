@@ -462,44 +462,50 @@ Future<void> updateLikeCount(PostModel post) async {
   // save events post
 
  Future<void> saveEventPost({
-  required String title,
-  required String description,
-  required String category,
-  required String streetName,
-  required String town,
-  required String region,
-  required String state,
-  required List<File> images,
-}) async {
-  try {
-    List<String> imageUrls = [];
+    required String title,
+    required String description,
+    required String category,
+    required String streetName,
+    required String town,
+    required String region,
+    required String state,
+    required List<File> images,
+    required int day, // Added day parameter
+    required int month, // Added month parameter
+    required int year, // Added year parameter
+  }) async {
+    try {
+      List<String> imageUrls = [];
 
-    // Upload images to Firebase Storage
-    for (var imageFile in images) {
-      final storageRef = FirebaseStorage.instance.ref().child('event_images/${DateTime.now().toIso8601String()}');
-      await storageRef.putFile(imageFile);
-      final url = await storageRef.getDownloadURL();
-      imageUrls.add(url);
+      // Upload images to Firebase Storage
+      for (var imageFile in images) {
+        final storageRef = FirebaseStorage.instance.ref().child('event_images/${DateTime.now().toIso8601String()}');
+        await storageRef.putFile(imageFile);
+        final url = await storageRef.getDownloadURL();
+        imageUrls.add(url);
+      }
+
+      // Save event data to Firestore
+      await FirebaseFirestore.instance.collection("event").add({
+        'title': title,
+        'description': description,
+        'category': category,
+        'streetName': streetName,
+        'town': town,
+        'region': region,
+        'state': state,
+        'imageUrl': imageUrls,
+        'creator': FirebaseAuth.instance.currentUser!.uid,
+        'timestamp': FieldValue.serverTimestamp(),
+        'day': day, // Save day
+        'month': month, // Save month
+        'year': year, // Save year
+      });
+    } catch (e) {
+      print('Error saving event post: $e');
+      // You can handle errors here, such as showing an error message to the user
     }
-
-    // Save event data to Firestore
-    await FirebaseFirestore.instance.collection("event").add({
-      'title': title,
-      'description': description,
-      'category': category,
-      'streetName': streetName,
-      'town': town,
-      'region': region,
-      'state': state,
-      'imageUrl': imageUrls, // Store list of image URLs
-      'creator': FirebaseAuth.instance.currentUser!.uid,
-      'timestamp': FieldValue.serverTimestamp(),
-    });
-  } catch (e) {
-    print('Error saving event post: $e');
-    // You can handle errors here, such as showing an error message to the user
   }
-}
 
 // ------------------------------------------------------------------------------------------------
   //get save events post
@@ -514,15 +520,42 @@ Future<void> updateLikeCount(PostModel post) async {
   //     }).toList();
   //   });
   // }
-  Stream<List<EventModel>> getEventPosts(String category) {
+   Stream<List<EventModel>> getEventPosts(String category) {
     return FirebaseFirestore.instance
         .collection('event')
         .where('category', isEqualTo: category)
         .snapshots()
         .map((querySnapshot) {
-      return querySnapshot.docs.map((doc) => EventModel.fromDocument(doc)).toList();
+      return querySnapshot.docs.map((doc) {
+        return EventModel.fromDocument(doc);
+      }).toList();
     });
   }
+
+  Stream<List<EventModel>> getEventsSortedByParticipants(String category) {
+    return FirebaseFirestore.instance
+        .collection('event')
+        .where('category', isEqualTo: category)
+        .snapshots()
+        .asyncMap((querySnapshot) async {
+      List<EventModel> events = [];
+      
+      for (var doc in querySnapshot.docs) {
+        EventModel event = EventModel.fromDocument(doc);
+        // Fetch participant count from subcollection
+        QuerySnapshot participantsSnapshot = await doc.reference.collection('participants').get();
+        event.participantCount = participantsSnapshot.size; // Number of participants
+        
+        events.add(event);
+      }
+      
+      // Sort events by participant count (descending)
+      events.sort((a, b) => b.participantCount.compareTo(a.participantCount));
+      
+      return events;
+    });
+  }
+  
   Stream<List<EventModel>> getEventList() {
   return FirebaseFirestore.instance
       .collection('event')
@@ -533,11 +566,9 @@ Future<void> updateLikeCount(PostModel post) async {
 }
 
 
-  //------------------------------------------------------------------------------------
-
-  //                           EVENT
-
-  // Add the following method to the PostService class
+  //-----------------------------------------------------------------------------------------------------------------------------------------------
+  //                                                EVENT
+   //-----------------------------------------------------------------------------------------------------------------------------------------------
 
    Future<bool> joinEvent(EventModel event) async {
     try {
@@ -734,13 +765,6 @@ Future<void> updateLikeCount(PostModel post) async {
     }
   }
 
-
-
-
-
-
-
-
 Future<List<EventModel>> fetchSavedEvents() async {
     try {
       String? userId = await AuthService().getCurrentUserId(); // Fetch current user ID
@@ -793,32 +817,6 @@ Future<List<EventModel>> fetchSavedEvents() async {
     }
   }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     Future<List<Map<String, dynamic>>> fetchParticipants(String eventId) async {
     try {
       // Reference to the participants collection inside the event document
@@ -841,6 +839,100 @@ Future<List<EventModel>> fetchSavedEvents() async {
       return []; // Return an empty list on error
     }
   }
+
+  // --------------------------------------------
+
+
+   Stream<List<EventModel>> fetchAndSortEventsByParticipantCount() {
+    StreamController<List<EventModel>> controller = StreamController<List<EventModel>>();
+
+    // Initial fetch and sort
+    _fetchAndSortEvents(controller);
+
+    // Listen for changes in Firestore
+    FirebaseFirestore.instance.collection('event').snapshots().listen((querySnapshot) {
+      _fetchAndSortEvents(controller);
+    }, onError: (error) {
+      print("Error fetching and sorting events: $error");
+      controller.addError(error);
+    });
+
+    return controller.stream;
+  }
+
+  Future<void> _fetchAndSortEvents(StreamController<List<EventModel>> controller) async {
+    try {
+      final eventsSnapshot = await FirebaseFirestore.instance.collection('event').get();
+
+      final events = eventsSnapshot.docs
+          .map((doc) => EventModel.fromDocument(doc))
+          .toList();
+
+      // Fetch participant counts for each event
+      await Future.forEach(events, (event) async {
+        final participantsSnapshot = await FirebaseFirestore.instance
+            .collection('event')
+            .doc(event.id)
+            .collection('participants')
+            .get();
+        event.participantCount = participantsSnapshot.size; // Update participant count for each event
+      });
+
+      // Sort events by participant count in descending order
+      events.sort((a, b) => b.participantCount.compareTo(a.participantCount));
+
+      controller.add(events);
+    } catch (error) {
+      print("Error fetching, counting participants, and sorting events: $error");
+      controller.addError(error);
+    }
+  }
+
+
+   Stream<int> getMemberCountStream(String communityId) {
+    return _firestore
+        .collection('communities')
+        .doc(communityId)
+        .collection('members')
+        .snapshots()
+        .map((snapshot) => snapshot.size);
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   
 

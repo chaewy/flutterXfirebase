@@ -41,26 +41,33 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Hobby App'),
-        elevation: 0,
-        actions: [
-          Padding(
-            padding: EdgeInsets.only(right: 25),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                IconButton(
-                  icon: Icon(Icons.search),
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => SearchPage()));
-                  },
-                  color: getIconColor(context),
-                ),
-              ],
-            ),
+      elevation: 0,
+      actions: [
+        Padding(
+          padding: EdgeInsets.only(right: 25),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              IconButton(
+                icon: Icon(Icons.search),
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => SearchPage()));
+                },
+                color: getIconColor(context),
+              ),
+            ],
           ),
-        ],
+        ),
+      ],
+      title: Padding(
+        padding: EdgeInsets.only(left: 50), // Adjust left padding as needed
+        child: Image.asset(
+          'assets/images/logo.png', // Replace with your image path
+          width: 130,
+          height: 60, // Adjust width as needed
+        ),
       ),
+    ),
 
 
       floatingActionButton: FloatingActionButton(

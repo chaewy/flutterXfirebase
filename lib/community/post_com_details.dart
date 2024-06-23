@@ -184,8 +184,13 @@ class _ComPostDetailsState extends State<ComPostDetails> {
                   ),
                   suffixIcon: TextButton(
                     style: ButtonStyle(
+                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                        RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.0), // Adjust the value as needed
+                        ),
+                      ),
                       foregroundColor: MaterialStateProperty.all(Colors.white),
-                      backgroundColor: MaterialStateProperty.all(Colors.blue),
+                      backgroundColor: MaterialStateProperty.all(Color.fromARGB(255, 245, 168, 35)),
                     ),
                     onPressed: () async {
                       // CommunityCommentModel comment, String text
@@ -193,6 +198,7 @@ class _ComPostDetailsState extends State<ComPostDetails> {
                     },
                     child: Text("Comment"),
                   ),
+
                 ),
                 textInputAction: TextInputAction.send,
                 onSubmitted: (val) {
@@ -293,7 +299,7 @@ Widget _buildCommentItem(CommunityCommentModel comment, UserModel? commentUser, 
         PopupMenuButton(
           icon: Icon(Icons.more_vert),
           itemBuilder: (context) => [
-            PopupMenuItem(
+            const PopupMenuItem(
               value: 'delete',
               child: Text('Delete'),
             ),
@@ -443,7 +449,7 @@ Widget _buildCommentItem(CommunityCommentModel comment, UserModel? commentUser, 
                         style: ButtonStyle(
                           padding: MaterialStateProperty.all(EdgeInsets.symmetric(vertical: 12, horizontal: 16)), // Adjust button padding
                           foregroundColor: MaterialStateProperty.all(Colors.white),
-                          backgroundColor: MaterialStateProperty.all(Colors.blue),
+                          backgroundColor: MaterialStateProperty.all(Color.fromARGB(255, 245, 168, 35)),
                           shape: MaterialStateProperty.all(
                             RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(4.0), // Adjust button border radius
@@ -553,6 +559,7 @@ void _handleLikeUnlike() async {
         super.dispose();
       }
     }
+
 
 
 

@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:file_picker/file_picker.dart';
-import 'dart:io';
 
 import 'package:flutter_application_1/my_components/chat_bubble.dart';
 import 'package:flutter_application_1/services/chat_service.dart';
@@ -34,57 +30,30 @@ class _ChatPageState extends State<ChatPage> {
     _currentUser = FirebaseAuth.instance.currentUser; // Get current user
   }
 
-  Future<void> _sendMessage() async {
-    if (_messageController.text.isNotEmpty) {
-      await _chatService.sendMessages(widget.receiverID, _messageController.text);
+ Future<void> _sendMessage() async {
+  if (_messageController.text.isNotEmpty) {
+    await _chatService.sendMessages(widget.receiverID, _messageController.text);
 
-      // Send notification to the receiver
-      sendNotification(widget.receiverID, _messageController.text);
-
-      _messageController.clear();
-    }
+    _messageController.clear();
   }
+}
 
-  Future<void> _sendImage() async {
-    try {
-      await _chatService.pickImage(widget.receiverID);
-    } catch (e) {
-      print('Error picking image: $e');
-    }
+Future<void> _sendImage() async {
+  try {
+    await _chatService.pickImage(widget.receiverID);
+  } catch (e) {
+    print('Error picking image: $e');
   }
+}
 
-  Future<void> _sendFile() async {
-    try {
-      await _chatService.pickFile(widget.receiverID);
-    } catch (e) {
-      print('Error picking file: $e');
-    }
+Future<void> _sendFile() async {
+  try {
+    await _chatService.pickFile(widget.receiverID);
+  } catch (e) {
+    print('Error picking file: $e');
   }
+}
 
-  Future<void> sendNotification(String receiverID, String message) async {
-    final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
-
-    final Map<String, dynamic> data = {
-      'senderId': FirebaseAuth.instance.currentUser!.uid,
-      'senderName': _currentUser?.displayName ?? 'Unknown',
-      'message': message,
-      'type': 'personal_chat', // Add type to distinguish notification type
-      'notificationId': DateTime.now().millisecondsSinceEpoch.toString(), // Unique ID for each notification
-    };
-
-    // Convert data map to Map<String, String>
-    Map<String, String> stringData = data.map((key, value) => MapEntry(key, value.toString()));
-
-    try {
-      await _firebaseMessaging.sendMessage(
-        to: receiverID,
-        data: stringData,
-      );
-      print('Notification sent successfully to receiver with ID: $receiverID');
-    } catch (e) {
-      print('Failed to send notification: $e');
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -119,11 +88,14 @@ class _ChatPageState extends State<ChatPage> {
         return Center(child: CircularProgressIndicator());
       }
 
-      return ListView(
-        reverse: true,
+      List<DocumentSnapshot> reversedMessages = snapshot.data!.docs.reversed.toList();
+
+      return ListView.builder(
+        reverse: true, // Reverse to show new messages at the bottom
         padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 10.0),
-        children: snapshot.data!.docs.map((doc) {
-          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        itemCount: reversedMessages.length,
+        itemBuilder: (context, index) {
+          Map<String, dynamic> data = reversedMessages[index].data() as Map<String, dynamic>;
           bool isCurrentUser = data['senderID'] == _currentUser!.uid;
 
           // Determine if the message has imageUrl or fileUrl
@@ -131,15 +103,14 @@ class _ChatPageState extends State<ChatPage> {
           bool hasFile = data.containsKey('fileUrl') && data['fileUrl'] != null;
 
           return Column(
-            crossAxisAlignment:
-                isCurrentUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            crossAxisAlignment: isCurrentUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
             children: [
-              if (hasImage)
+              if (hasImage && !hasFile) // Display image if it exists and there's no file
                 Container(
                   width: 200, // Adjust width as needed
                   child: Image.network(data['imageUrl']),
                 ),
-              if (hasFile)
+              if (hasFile) // Display file if it exists
                 InkWell(
                   onTap: () {
                     // Handle file tap action (open or view the file)
@@ -165,19 +136,20 @@ class _ChatPageState extends State<ChatPage> {
                     ),
                   ),
                 ),
-              ChatBubble(
-                message: data['message'],
-                isCurrentUser: isCurrentUser,
-                imageUrl: hasImage ? data['imageUrl'] : null,
-                fileUrl: hasFile ? data['fileUrl'] : null,
-              ),
+              if (!hasImage && !hasFile) // Display text message if no image or file
+                ChatBubble(
+                  message: data['message'],
+                  isCurrentUser: isCurrentUser,
+                ),
             ],
           );
-        }).toList(),
+        },
       );
     },
   );
 }
+
+
 
 
   Widget _buildUserInput() {

@@ -84,43 +84,66 @@ class ChatService {
     return fileUrl;
   }
 
-  // Modified sendMessages method
-  Future<void> sendMessages(String receiverID, String message, {String? imageUrl, String? fileUrl}) async {
-    User? currentUser = _auth.currentUser;
+  //-----------------------------------------------------------
 
-    if (currentUser == null) {
-      print("User not logged in");
-      return;
-    }
+ Future<void> sendMessages(String receiverID, String message, {String? imageUrl, String? fileUrl}) async {
+  User? currentUser = _auth.currentUser;
 
-    final String currentUserID = currentUser.uid;
-    final String currentEmail = currentUser.email ?? '';
-    final Timestamp timestamp = Timestamp.now();
+  if (currentUser == null) {
+    print("User not logged in");
+    return;
+  }
 
-    // Create message map
-    Map<String, dynamic> newMessage = {
-      'senderID': currentUserID,
-      'senderEmail': currentEmail,
-      'receiverID': receiverID,
-      'message': message,
-      'timestamp': timestamp,
-      'imageUrl': imageUrl,
-      'fileUrl': fileUrl,
-    };
+  final String currentUserID = currentUser.uid;
+  final String currentEmail = currentUser.email ?? '';
+  final Timestamp timestamp = Timestamp.now();
 
-    List<String> ids = [currentUserID, receiverID];
-    ids.sort();
-    String chatRoomID = ids.join('_');
+  // Check if the message is empty and both imageUrl and fileUrl are null
+  if (message.isEmpty && imageUrl == null && fileUrl == null) {
+    print("Empty message, imageUrl, and fileUrl. Nothing to send.");
+    return;
+  }
 
+  // Create message map
+  Map<String, dynamic> newMessage = {
+    'senderID': currentUserID,
+    'senderEmail': currentEmail,
+    'receiverID': receiverID,
+    'message': message,
+    'timestamp': timestamp,
+  };
+
+  // Add imageUrl and/or fileUrl if provided
+  if (imageUrl != null) {
+    newMessage['imageUrl'] = imageUrl;
+  }
+  if (fileUrl != null) {
+    newMessage['fileUrl'] = fileUrl;
+  }
+
+  List<String> ids = [currentUserID, receiverID];
+  ids.sort();
+  String chatRoomID = ids.join('_');
+
+  try {
     await _firestore
         .collection("chat")
         .doc(chatRoomID)
         .collection("messages")
         .add(newMessage);
-
-    // Send notification to the receiver
-    _firebaseApi.sendMessage(currentUserID, receiverID, message, 'personal_chat');
+  } catch (e) {
+    print('Error sending message: $e');
+    return;
   }
+}
+
+
+
+
+
+
+
+//--------------------------------------------------------------------------------------------
 
     Stream<QuerySnapshot> getMessages(String userID, String otherUserID) {
     List<String> ids = [userID, otherUserID];

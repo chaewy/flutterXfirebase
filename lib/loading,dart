@@ -1,0 +1,51 @@
+import 'package:flutter/material.dart';
+
+class CustomLoadingIndicator extends StatefulWidget {
+  const CustomLoadingIndicator({Key? key}) : super(key: key);
+
+  @override
+  _CustomLoadingIndicatorState createState() => _CustomLoadingIndicatorState();
+}
+
+class _CustomLoadingIndicatorState extends State<CustomLoadingIndicator>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          return Transform.rotate(
+            angle: _controller.value * 2.0 * 3.141592653589793,
+            child: child,
+          );
+        },
+        child: const ClipOval(
+          child: Image(
+            image: AssetImage('assets/images/rounded.png'),
+            width: 50.0, // Adjust the size as needed
+            height: 50.0,
+            fit: BoxFit.cover,
+          ),
+        ),
+      ),
+    );
+  }
+}

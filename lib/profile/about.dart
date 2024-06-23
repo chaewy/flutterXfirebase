@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_application_1/models/user.dart';
 import 'package:flutter_application_1/services/user.dart';
 
-
 class AboutPage extends StatelessWidget {
   final String uid;
   final UserService _userService = UserService();
@@ -26,28 +25,38 @@ class AboutPage extends StatelessWidget {
 
           var user = snapshot.data!;
 
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildSectionTitle('Name'),
-                _buildInfoText(user.name),
-                SizedBox(height: 10),
-
-                _buildSectionTitle('Bio'),
-                _buildInfoText(user.bio),
-                SizedBox(height: 10),
-
-                _buildSectionTitle('Birthday'),
-                _buildInfoText(user.birthday),
-                SizedBox(height: 10),
-
-                _buildSectionTitle('Gender'),
-                _buildInfoText(user.gender),
-
-                SizedBox(height: 16.0),
-              ],
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 20),
+                  _buildSectionCard(
+                    icon: Icons.person,
+                    title: 'Name',
+                    content: user.name,
+                  ),
+                  SizedBox(height: 10),
+                  _buildSectionCard(
+                    icon: Icons.info,
+                    title: 'Bio',
+                    content: user.bio,
+                  ),
+                  SizedBox(height: 10),
+                  _buildSectionCard(
+                    icon: Icons.cake,
+                    title: 'Birthday',
+                    content: user.birthday,
+                  ),
+                  SizedBox(height: 10),
+                  _buildSectionCard(
+                    icon: Icons.transgender,
+                    title: 'Gender',
+                    content: user.gender,
+                  ),
+                ],
+              ),
             ),
           );
         },
@@ -55,24 +64,79 @@ class AboutPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 18.0,
-          fontWeight: FontWeight.bold,
+  Widget _buildUserCard(UserModel user) {
+    return Card(
+      elevation: 5,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  user.name,
+                  style: TextStyle(
+                    fontSize: 24.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 5),
+                Text(
+                  user.bio,
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    color: Colors.grey[700],
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildInfoText(String text) {
-    return Text(
-      text,
-      style: TextStyle(
-        fontSize: 16.0,
+  Widget _buildSectionCard({
+    required IconData icon,
+    required String title,
+    required String content,
+  }) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              size: 30,
+              color: const Color.fromARGB(255, 245, 168, 35),
+            ),
+            SizedBox(width: 20),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 5),
+                Text(
+                  content,
+                  style: TextStyle(
+                    fontSize: 16.0,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

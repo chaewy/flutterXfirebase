@@ -1,258 +1,220 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_application_1/loading,dart';
 import 'package:flutter_application_1/models/event.dart';
 import 'package:flutter_application_1/pages/events/eventDetails_page.dart';
-import 'package:flutter_application_1/pages/post/FullImage_page.dart';
-import 'package:flutter_application_1/services/add_post.dart';
-import 'package:flutter_application_1/pages/events/list_event.dart';
+import 'package:flutter_application_1/pages/events/list_event_category.dart';
+import 'package:flutter_application_1/services/add_post.dart'; // Replace with your actual service
 
 class EventPage extends StatefulWidget {
-  EventPage({Key? key}) : super(key: key);
+  const EventPage({Key? key}) : super(key: key);
 
   @override
-  _EventPageState createState() => _EventPageState();
+  State<EventPage> createState() => _EventPageState();
 }
 
 class _EventPageState extends State<EventPage> {
-  late Future<List<EventModel>> _futureEvents;
-  PostService _postService = PostService();
+  late Stream<List<EventModel>> _eventsStream;
+  late List<EventModel> _events;
+
+  // Categories list
+  List<String> categories = [
+    'anime & cosplay',
+    'collectibles',
+    'fashion & beauty',
+    'art',
+    'business & finance',
+    'education & career',
+    'food & drinks',
+    'games',
+    'law',
+    'home & garden',
+    'nature & outdoors',
+    'music',
+    'movies & tv',
+    'news & politics',
+    'places & travel',
+    'reading and writing',
+    'sports',
+    'vehicles',
+    'technology',
+  ];
 
   @override
   void initState() {
     super.initState();
-    _futureEvents = fetchAndSortEventsByParticipantCount();
-  }
-
-  Future<List<EventModel>> fetchAndSortEventsByParticipantCount() async {
-    try {
-      final eventsSnapshot =
-          await FirebaseFirestore.instance.collection('event').get();
-
-      final events = eventsSnapshot.docs
-          .map((doc) => EventModel.fromDocument(doc))
-          .toList();
-
-      // Fetch participant counts for each event
-      await Future.forEach(events, (event) async {
-        final participantsSnapshot = await FirebaseFirestore.instance
-            .collection('event')
-            .doc(event.id)
-            .collection('participants')
-            .get();
-        event.participantCount = participantsSnapshot.size; // Update participant count for each event
+    _eventsStream = PostService().fetchAndSortEventsByParticipantCount();
+    _events = []; // Initialize empty list
+    _eventsStream.listen((events) {
+      setState(() {
+        _events = events;
       });
-
-      // Sort events by participant count in descending order
-      events.sort((a, b) => b.participantCount.compareTo(a.participantCount));
-
-      return events;
-    } catch (error) {
-      print("Error fetching, counting participants, and sorting events: $error");
-      return [];
-    }
+    }, onError: (error) {
+      // Handle error
+      print("Error fetching events: $error");
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: ListView(
-          children: [
-            _buildEventPopular(context, 'Popular Events'),
-            _buildEventCategory(context, 'Cooking'),
-            _buildEventCategory(context, 'War'),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEventCategory(BuildContext context, String category) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          category,
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        SizedBox(height: 12.0),
-        Container(
-          height: MediaQuery.of(context).size.height * 0.5,
-          child: ListEvent(category: category),
-        ),
-      ],
-    );
-  }
-
- Widget _buildEventPopular(BuildContext context, String category) {
-  return Column(
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+  padding: EdgeInsets.only(left: 15.0),
+  child: Column( // Wrap the Text and SizedBox in a Column
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Text(
-        category,
+        'Explore Event by Category',
         style: TextStyle(
-          fontSize: 24,
+          color : Theme.of(context).colorScheme.onSecondary,
           fontWeight: FontWeight.bold,
+          fontSize: 17,
         ),
       ),
-      SizedBox(height: 12.0),
-      Container(
-        height: MediaQuery.of(context).size.height * 0.4, // Reduced height
-        child: FutureBuilder<List<EventModel>>(
-          future: _futureEvents,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              print('Error fetching popular events: ${snapshot.error}');
-              return Center(child: Text('An error occurred. Please try again later.'));
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return Center(child: Text('No popular events found.'));
-            } else {
-              List<EventModel> popularEvents = snapshot.data!;
+      SizedBox(height: 10), // SizedBox is now a child of Padding, not Text
+    ],
+  ),
+),
 
-              return ListView(
-                scrollDirection: Axis.horizontal,
-                children: popularEvents.map((event) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => EventDetails(event: event),
-                          ),
-                        );
-                      },
-                      child: SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.4,
-                        child: Card(
-                          elevation: 3,
-                          child: Column(
-                            
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildImageList(context, event.imageUrl),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            event.title,
-                                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold), // Reduced font size
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 1,
-                                          ),
-                                        ),
-                                        PopupMenuButton<String>(
-                                          icon: Icon(Icons.more_vert, color: Colors.grey),
-                                          onSelected: (String value) async {
-                                            if (value == 'save') {
-                                              bool alreadySaved = await _postService.saveEvent(event);
+          // First row with first 10 categories buttons
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: categories.take(10).map((category) {
+                return Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8.0),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      navigateToEventListPage(category);
+                    },
+                    child: Text(category),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          // Second row with next 9 categories buttons
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: categories.skip(10).map((category) {
+                return Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8.0),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      navigateToEventListPage(category);
+                    },
+                    child: Text(category),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          SizedBox(height: 10,),
+            Padding(
+            padding: EdgeInsets.only(left: 15.0),
+            child: Text(
+    'Popular Event',
+    style: TextStyle(
+      color : Theme.of(context).colorScheme.onSecondary,
+      fontWeight: FontWeight.bold, // Make the text bold
+      fontSize: 17, // Optional: Adjust font size if needed
+    ),
+  ),
+          ),
+          Expanded(
+            child: _buildEventList(),
+          ),
+        ],
+      ),
+    );
+  }
 
-                                              if (alreadySaved) {
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  SnackBar(content: Text('Event is already saved.')),
-                                                );
-                                              } else {
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  SnackBar(content: Text('Event saved successfully.')),
-                                                );
-                                              }
-                                            } else if (value == 'unsave') {
-                                              bool unsaveSuccess = await _postService.unsaveEvent(event.id);
+  // Function to navigate to EventListPage with selected category
+  void navigateToEventListPage(String category) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EventListPage(category: category),
+      ),
+    );
+  }
 
-                                              if (unsaveSuccess) {
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  SnackBar(content: Text('Event unsaved.')),
-                                                );
-                                              } else {
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  SnackBar(content: Text('Event was not saved.')),
-                                                );
-                                              }
-                                            }
-                                          },
-                                          itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                                            const PopupMenuItem<String>(
-                                              value: 'save',
-                                              child: ListTile(
-                                                title: Text('Save Event'),
-                                              ),
-                                            ),
-                                            const PopupMenuItem<String>(
-                                              value: 'unsave',
-                                              child: ListTile(
-                                                title: Text('Unsave Event'),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                    SizedBox(height: 4),
-                                    Row(
-                                      children: [
-                                        Icon(Icons.location_on, size: 14), // Reduced icon size
-                                        SizedBox(width: 4),
-                                        Expanded(
-                                          child: Text(
-                                            "${event.region}, ${event.state}",
-                                            style: TextStyle(color: Colors.grey, fontSize: 12), // Reduced font size
-                                            // overflow: TextOverflow.ellipsis,
-                                            maxLines: 1,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
+  Widget _buildEventList() {
+    if (_events.isEmpty) {
+      return Center(
+              child: CustomLoadingIndicator(), // Show custom loading indicator
+            );
+      
+    } else {
+      return ListView.builder(
+        itemCount: _events.length,
+        itemBuilder: (context, index) {
+          return GestureDetector(
+            onTap: () {
+              // Navigate to EventDetailsPage with the corresponding EventModel
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EventDetails(event: _events[index]),
+                ),
+              );
+            },
+            child: Card(
+              elevation: 4,
+              margin: EdgeInsets.symmetric(vertical: 5, horizontal: 14),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Event Details
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 9.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(height: 20),
+                            Text(
+                              _events[index].title,
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                            ),
+                            SizedBox(height: 6),
+                            Text('Participants: ${_events[index].participantCount}'),
+                          ],
                         ),
                       ),
                     ),
-                  );
-                }).toList(),
-              );
-            }
-          },
-        ),
-      ),
-    ],
-  );
-}
-
-Widget _buildImageList(BuildContext context, List<String> imageUrl) {
-  return GestureDetector(
-    onTap: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => FullImagePage(imageUrl: imageUrl[0]),
-        ),
+                    SizedBox(width: 10),
+                    // Image Gallery
+                    Container(
+                      height: 100, // Adjust the height as needed
+                      width: 150,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _events[index].imageUrl.length,
+                        itemBuilder: (context, imageIndex) {
+                          return Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 4.0),
+                            child: Image.network(
+                              _events[index].imageUrl[imageIndex],
+                              width: 150,
+                              fit: BoxFit.cover,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
       );
-    },
-    child: Center(
-      child: Image.network(
-        imageUrl[0],
-        fit: BoxFit.cover,
-        height: MediaQuery.of(context).size.height * 0.2, // Adjusted height
-        width: double.infinity, // Full width to avoid empty space
-      ),
-    ),
-  );
-}
+    }
+  }
 }

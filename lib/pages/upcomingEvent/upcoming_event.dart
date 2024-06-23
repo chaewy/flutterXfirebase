@@ -146,7 +146,8 @@ class EventCard extends StatelessWidget {
         ),
         trailing: ElevatedButton(
           style: ButtonStyle(
-            backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
+            backgroundColor: MaterialStateProperty.all<Color>(Color.fromARGB(255, 255, 255, 255)),
+             foregroundColor: MaterialStateProperty.all<Color>(const Color.fromARGB(255, 252, 0, 0)), // Set text color to white
           ),
           onPressed: () async {
             if (isJoinedEvent) {

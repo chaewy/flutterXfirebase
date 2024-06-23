@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class CreateCommunityPage extends StatefulWidget {
   const CreateCommunityPage({Key? key}) : super(key: key);
@@ -12,7 +16,15 @@ class CreateCommunityPage extends StatefulWidget {
 class _CreateCommunityPageState extends State<CreateCommunityPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  String? selectedTopic; // Variable to store the selected topic
+  String? selectedTopic;
+
+  // Image variables
+  File? iconImageFile;
+  File? bannerImageFile;
+
+  // Image URLs to display after selection
+  String? iconImageUrl;
+  String? bannerImageUrl;
 
   // Available topics
   List<String> topics = [
@@ -44,6 +56,35 @@ class _CreateCommunityPageState extends State<CreateCommunityPage> {
     });
   }
 
+  // Function to handle image selection
+  Future<void> _pickImage(ImageSource source, String type) async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: source);
+
+    if (pickedFile != null) {
+      setState(() {
+        if (type == 'icon') {
+          iconImageFile = File(pickedFile.path);
+          iconImageUrl = null; // Clear previous image URL
+        } else if (type == 'banner') {
+          bannerImageFile = File(pickedFile.path);
+          bannerImageUrl = null; // Clear previous image URL
+        }
+      });
+    }
+  }
+
+  // Function to upload image to Firebase Storage
+  Future<String> _uploadImage(File imageFile, String fileName) async {
+    FirebaseStorage storage = FirebaseStorage.instance;
+    Reference ref = storage.ref().child(fileName);
+    UploadTask uploadTask = ref.putFile(imageFile);
+    TaskSnapshot snapshot = await uploadTask.whenComplete(() => null);
+    String downloadUrl = await snapshot.ref.getDownloadURL();
+    return downloadUrl;
+  }
+
+  // Function to create community with image uploads
   Future<void> _createCommunity() async {
     // Validate fields
     if (_nameController.text.isEmpty ||
@@ -55,7 +96,7 @@ class _CreateCommunityPageState extends State<CreateCommunityPage> {
       return;
     }
 
-    // Access Firestore instance
+    // Access Firestore and Firebase Auth instances
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     FirebaseAuth auth = FirebaseAuth.instance;
 
@@ -63,18 +104,28 @@ class _CreateCommunityPageState extends State<CreateCommunityPage> {
       // Get current user ID
       String? userId = auth.currentUser?.uid;
       if (userId == null) {
-        throw Exception('User not logged in.'); // Handle case where user is not logged in
+        throw Exception('User not logged in.');
+      }
+
+      // Upload icon image if selected
+      if (iconImageFile != null) {
+        iconImageUrl = await _uploadImage(iconImageFile!, 'icons/$userId-icon.jpg');
+      }
+
+      // Upload banner image if selected
+      if (bannerImageFile != null) {
+        bannerImageUrl = await _uploadImage(bannerImageFile!, 'banners/$userId-banner.jpg');
       }
 
       // Add community to Firestore
       DocumentReference docRef = await firestore.collection('communities').add({
         'name': _nameController.text,
         'description': _descriptionController.text,
-        'createdAt': Timestamp.now(), // Store creation timestamp
-        'creatorId': userId, // Assign creator's user ID
-        'iconImage': 'https://firebasestorage.googleapis.com/v0/b/hobby-b1c8b.appspot.com/o/default%2Fcom.jpg?alt=media&token=8d43d287-41ca-4bae-b279-5f8bb645b4e5',
-        'bannerImage': 'https://firebasestorage.googleapis.com/v0/b/hobby-b1c8b.appspot.com/o/default%2Fyellow.jpg?alt=media&token=06a3b070-5b6f-4d5a-8d92-c78569796cea',
-        'topics': selectedTopic, // Store selected topic
+        'createdAt': Timestamp.now(),
+        'creatorId': userId,
+        'iconImage': iconImageUrl ?? '',
+        'bannerImage': bannerImageUrl ?? '',
+        'topics': selectedTopic,
       });
 
       // Show success message or navigate to community page
@@ -82,7 +133,7 @@ class _CreateCommunityPageState extends State<CreateCommunityPage> {
         SnackBar(content: Text('Community created successfully')),
       );
 
-      // Navigate back to previous screen (assuming this is where you navigate back)
+      // Navigate back to previous screen
       Navigator.pop(context);
 
     } catch (e) {
@@ -134,7 +185,8 @@ class _CreateCommunityPageState extends State<CreateCommunityPage> {
                             child: ElevatedButton(
                               onPressed: () => _selectTopic(topic),
                               style: ElevatedButton.styleFrom(
-                                foregroundColor: selectedTopic == topic ? Colors.white : Colors.black, backgroundColor: selectedTopic == topic ? Colors.blue : Colors.grey[300],
+                                foregroundColor: selectedTopic == topic ? Colors.white : Colors.black,
+                                backgroundColor: selectedTopic == topic ? Colors.blue : Colors.grey[300],
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(20.0), // Oval-shaped button
                                 ),
@@ -148,14 +200,72 @@ class _CreateCommunityPageState extends State<CreateCommunityPage> {
                   ],
                 ),
               ),
+              SizedBox(height: 16.0),
+
+              // Selected icon image preview
+              if (iconImageFile != null)
+                Container(
+                  height: 200,
+                  width: 200,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  child: Image.file(
+                    iconImageFile!,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+
+              SizedBox(height: 16.0),
+
+              // Selected banner image preview
+              if (bannerImageFile != null)
+                Container(
+                  height: 200,
+                  width: 200,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  child: Image.file(
+                    bannerImageFile!,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+
+              SizedBox(height: 16.0),
+
+              // Image picker buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => _pickImage(ImageSource.gallery, 'icon'),
+                      icon: Icon(Icons.image),
+                      label: Text('Select Icon Image'),
+                    ),
+                  ),
+                  SizedBox(width: 16.0),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => _pickImage(ImageSource.gallery, 'banner'),
+                      icon: Icon(Icons.image),
+                      label: Text('Select Banner Image'),
+                    ),
+                  ),
+                ],
+              ),
+
               SizedBox(height: 32.0),
+
               ElevatedButton(
                 onPressed: _createCommunity,
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20.0), // Oval-shaped button
+                    borderRadius: BorderRadius.circular(20.0),
                   ),
-                  padding: EdgeInsets.symmetric(horizontal: 32.0, vertical: 16.0), // Adjusted button size
+                  padding: EdgeInsets.symmetric(horizontal: 32.0, vertical: 16.0),
                 ),
                 child: Text('Create Community'),
               ),

@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/loading,dart';
 import 'package:flutter_application_1/models/event.dart';
 import 'package:flutter_application_1/models/user.dart';
 import 'package:flutter_application_1/pages/events/editEvent.dart';
@@ -35,6 +36,36 @@ class _EventDetailsState extends State<EventDetails> {
       _participantsFuture = _userService.getEventParticipants(widget.event.id);
     });
   }
+  String _getMonthName(int month) {
+  switch (month) {
+    case 1:
+      return 'January';
+    case 2:
+      return 'February';
+    case 3:
+      return 'March';
+    case 4:
+      return 'April';
+    case 5:
+      return 'May';
+    case 6:
+      return 'June';
+    case 7:
+      return 'July';
+    case 8:
+      return 'August';
+    case 9:
+      return 'September';
+    case 10:
+      return 'October';
+    case 11:
+      return 'November';
+    case 12:
+      return 'December';
+    default:
+      return 'Invalid Month';
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -153,7 +184,9 @@ class _EventDetailsState extends State<EventDetails> {
           future: _userService.getUserInfo(widget.event.creator).first,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
+              return Center(
+              child: CustomLoadingIndicator(), // Show custom loading indicator
+            );
             } else if (snapshot.hasError) {
               return Center(child: Text('Error: ${snapshot.error}'));
             } else if (!snapshot.hasData) {
@@ -204,24 +237,24 @@ class _EventDetailsState extends State<EventDetails> {
 
                     const SizedBox(height: 10),
 
-                    const Row(
+                    Row(
                     children: [
                       SizedBox(width: 5), 
                       Icon(Icons.calendar_today), // Calendar Icon
                       SizedBox(width: 20), // Spacer for a little distance
                       Text(
-                        '21', // Day
-                        style: TextStyle(fontSize: 18),
+                        '${widget.event.day}',
+                        style: TextStyle(fontSize: 17),
                       ),
                       SizedBox(width: 4), // Spacer between day and month
                       Text(
-                        'Jun', // Month
-                        style: TextStyle(fontSize: 18),
+                        '${_getMonthName(widget.event.month)}',
+                        style: TextStyle(fontSize: 17),
                       ),
                       SizedBox(width: 4), // Spacer between month and year
                       Text(
-                        '2024', // Year
-                        style: TextStyle(fontSize: 18),
+                        '${widget.event.year}',
+                        style: TextStyle(fontSize: 17),
                       ),
                     ],
                   ),
@@ -375,7 +408,9 @@ class _EventDetailsState extends State<EventDetails> {
                                 future: _postService.fetchParticipants(widget.event.id),
                                 builder: (context, snapshot) {
                                   if (snapshot.connectionState == ConnectionState.waiting) {
-                                    return CircularProgressIndicator();
+                                    return Center(
+                                      child: CustomLoadingIndicator(), // Show custom loading indicator
+                                    );
                                   } else if (snapshot.hasError) {
                                     return Text('Error: ${snapshot.error}');
                                   } else {
@@ -411,7 +446,9 @@ class _EventDetailsState extends State<EventDetails> {
                       future: _participantsFuture,
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const Center(child: CircularProgressIndicator());
+                          return Center(
+                            child: CustomLoadingIndicator(), // Show custom loading indicator
+                          );
                         } else if (snapshot.hasError) {
                           return Center(child: Text('Error: ${snapshot.error}'));
                         } else {
