@@ -34,6 +34,8 @@ class PostService with ChangeNotifier{
 
   AuthService _authService = AuthService(); // Instance of AuthService
 
+  final CollectionReference postCollection = FirebaseFirestore.instance.collection('post');
+
 List<PostModel> _postListFromSnapshot(QuerySnapshot snapshot) {
   return snapshot.docs.map((doc) {
     final data = doc.data() as Map<String, dynamic>?; // Explicitly cast to Map<String, dynamic>
@@ -92,6 +94,33 @@ List<PostModel> _postListFromSnapshot(QuerySnapshot snapshot) {
     print('Error saving post: $e');
   }
 }
+
+ Future<void> deletePost(String postId) async {
+    try {
+      await postCollection.doc(postId).delete();
+      print("Post with ID $postId deleted successfully.");
+    } catch (e) {
+      print("Error deleting post: $e");
+    }
+  }
+
+   Future<void> updatePost(PostModel post) async {
+    try {
+      await postCollection.doc(post.id).update({
+        'title': post.title,
+        'imageUrls': post.imageUrls,
+        'description': post.description,
+        'timestamp': post.timestamp,
+        'likeCount': post.likeCount,
+      });
+    } catch (e) {
+      print('Error updating post: $e');
+      throw e;
+    }
+  }
+
+
+
 
 // ------------------------------------------------------------------------------------------------
 //                             Comment
@@ -897,45 +926,6 @@ Future<List<EventModel>> fetchSavedEvents() async {
         .snapshots()
         .map((snapshot) => snapshot.size);
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-
 
 
 }

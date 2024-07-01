@@ -1,74 +1,51 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/models/post.dart';
 import 'package:flutter_application_1/models/user.dart';
-import 'package:flutter_application_1/pages/post/comment_page.dart';
 import 'package:flutter_application_1/pages/post/FullImage_page.dart';
+import 'package:flutter_application_1/pages/post/comment_page.dart';
+import 'package:flutter_application_1/profile/editpost.dart';
 import 'package:flutter_application_1/profile/profile_page.dart';
 import 'package:flutter_application_1/services/add_post.dart';
 import 'package:flutter_application_1/services/user.dart';
+import 'package:flutter_application_1/services/auth_service.dart';
 
 class PostListByUser extends StatelessWidget {
   final String uid;
+  final PostService _postService = PostService();
+  final UserService _userService = UserService();
+  final AuthService _authService = AuthService();
 
-  PostService _postService = PostService();
-  UserService _userService = UserService();
+  PostListByUser({required this.uid});
 
   Widget _buildImages(BuildContext context, List<String> imageUrls) {
-    if (imageUrls.length == 1) {
-      return GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => FullImagePage(imageUrl: imageUrls.first),
+    return Container(
+      height: 200, // Adjust the height according to your design
+      child: PageView.builder(
+        itemCount: imageUrls.length,
+        itemBuilder: (context, index) {
+          return GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => FullImagePage(imageUrl: imageUrls[index]),
+                ),
+              );
+            },
+            child: Image.network(
+              imageUrls[index],
+              fit: BoxFit.cover,
             ),
           );
         },
-        child: Center(
-          child: Image.network(
-            imageUrls.first,
-            fit: BoxFit.cover,
-          ),
-        ),
-      );
-    } else {
-      return Container(
-        height: 100, // Set a smaller height for the image container
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          itemCount: imageUrls.length,
-          itemBuilder: (context, index) {
-            return GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => FullImagePage(imageUrl: imageUrls[index]),
-                  ),
-                );
-              },
-              child: Padding(
-                padding: EdgeInsets.only(right: 8.0),
-                child: Image.network(
-                  imageUrls[index],
-                  height: 100, // Set a smaller height for each image
-                  width: 100, // Set a smaller width for each image
-                  fit: BoxFit.cover,
-                ),
-              ),
-            );
-          },
-        ),
-      );
-    }
+      ),
+    );
   }
-
-  PostListByUser({required this.uid});
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<PostModel>>(
-      stream: PostService().getPostByUser(uid),
+      stream: _postService.getPostByUser(uid),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
@@ -158,38 +135,80 @@ class PostListByUser extends StatelessWidget {
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                               children: [
-                                                GestureDetector(
-                                                  onTap: () {
-                                                    Navigator.push(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                        builder: (context) => ProfilePage(user: user),
+                                                Row(
+                                                  children: [
+                                                    GestureDetector(
+                                                      onTap: () {
+                                                        Navigator.push(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                            builder: (context) => ProfilePage(user: user),
+                                                          ),
+                                                        );
+                                                      },
+                                                      child: CircleAvatar(
+                                                        backgroundImage: NetworkImage(user.profileImageUrl),
+                                                        radius: 16,
                                                       ),
-                                                    );
-                                                  },
-                                                  child: CircleAvatar(
-                                                    backgroundImage: NetworkImage(user.profileImageUrl),
-                                                    radius: 16,
-                                                  ),
-                                                ),
-                                                SizedBox(width: 8),
-                                                GestureDetector(
-                                                  onTap: () {
-                                                    Navigator.push(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                        builder: (context) => ProfilePage(user: user),
-                                                      ),
-                                                    );
-                                                  },
-                                                  child: Text(
-                                                    user.name,
-                                                    style: TextStyle(
-                                                      fontWeight: FontWeight.bold,
-                                                      fontSize: 14,
                                                     ),
-                                                  ),
+                                                    SizedBox(width: 8),
+                                                    GestureDetector(
+                                                      onTap: () {
+                                                        Navigator.push(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                            builder: (context) => ProfilePage(user: user),
+                                                          ),
+                                                        );
+                                                      },
+                                                      child: Text(
+                                                        user.name,
+                                                        style: TextStyle(
+                                                          fontWeight: FontWeight.bold,
+                                                          fontSize: 14,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                FutureBuilder<String?>(
+                                                  future: _authService.getCurrentUserId(),
+                                                  builder: (context, currentUserSnapshot) {
+                                                    if (!currentUserSnapshot.hasData) {
+                                                      return Container(); // If no user is logged in, return an empty container
+                                                    }
+
+                                                    final currentUserId = currentUserSnapshot.data!;
+                                                    return currentUserId == post.creator
+                                                        ? PopupMenuButton<String>(
+                                                            onSelected: (value) {
+                                                              if (value == 'edit') {
+                                                                // Navigate to edit post page
+                                                                Navigator.push(
+                                                                  context,
+                                                                  MaterialPageRoute(
+                                                                    builder: (context) => EditPostPage(post: post), // Assuming you have an EditPostPage
+                                                                  ),
+                                                                );
+                                                              } else if (value == 'delete') {
+                                                                // Delete the post
+                                                                _postService.deletePost(post.id);
+                                                              }
+                                                            },
+                                                            itemBuilder: (BuildContext context) {
+                                                              return {'Edit', 'Delete'}
+                                                                  .map((String choice) {
+                                                                return PopupMenuItem<String>(
+                                                                  value: choice.toLowerCase(),
+                                                                  child: Text(choice),
+                                                                );
+                                                              }).toList();
+                                                            },
+                                                          )
+                                                        : Container();
+                                                  },
                                                 ),
                                               ],
                                             ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/loading,dart';
 import 'package:flutter_application_1/models/event.dart';
 import 'package:flutter_application_1/pages/events/eventDetails_page.dart';
 import 'package:flutter_application_1/services/add_post.dart';
@@ -74,7 +75,7 @@ class _UpcomingEventState extends State<UpcomingEvent> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? Center(child: CustomLoadingIndicator())
           : errorText.isNotEmpty
               ? Center(child: Text(errorText))
               : Container(

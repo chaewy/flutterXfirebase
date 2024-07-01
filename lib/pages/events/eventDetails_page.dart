@@ -10,6 +10,8 @@ import 'package:flutter_application_1/services/add_post.dart';
 import 'package:flutter_application_1/services/user.dart';
 import 'package:flutter_application_1/pages/post/FullImage_page.dart';
 
+
+
 class EventDetails extends StatefulWidget {
   final EventModel event;
 
@@ -24,6 +26,28 @@ class _EventDetailsState extends State<EventDetails> {
   final PostService _postService = PostService();
   late Future<List<UserModel>> _participantsFuture;
   String userId = FirebaseAuth.instance.currentUser!.uid;
+
+  // Method to handle saving the event
+  Future<void> _saveEvent() async {
+    bool eventAlreadySaved = await _postService.saveEvent(widget.event);
+
+    // Show a snackbar based on whether the event was already saved or saved successfully
+    if (eventAlreadySaved) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Event is already saved!'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Event saved successfully!'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
 
   @override
   void initState() {
@@ -145,12 +169,11 @@ class _EventDetailsState extends State<EventDetails> {
 
 
 
-          if (!isCurrentUserCreator)
+           if (!isCurrentUserCreator)
             IconButton(
               icon: Icon(Icons.save),
               onPressed: () {
-                // Handle save action
-                // For example, show a dialog or perform some action
+                // Show dialog to confirm save action
                 showDialog(
                   context: context,
                   builder: (BuildContext context) {
@@ -166,9 +189,9 @@ class _EventDetailsState extends State<EventDetails> {
                         ),
                         TextButton(
                           child: Text('Save'),
-                          onPressed: () {
-                            // Perform save action here
+                          onPressed: () async {
                             Navigator.of(context).pop();
+                            await _saveEvent(); // Call method to save event
                           },
                         ),
                       ],
