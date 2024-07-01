@@ -1,16 +1,27 @@
-# flutter_application_1
 
-A new Flutter project.
+# The Hobbyist 🚀
 
-## Getting Started
+combination of social media platforms 
 
-This project is a starting point for a Flutter application.
 
-A few resources to get you started if this is your first Flutter project:
+## Features 🧠
+- Basic social media features, e.g., posting, commenting, liking
+- Light/dark mode toggle
+- Event features
+- Community features
+- Chatting (personal/group/event)
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Tech Stack
+
+**Framework:** Flutter
+
+**Language:** Dart
+
+**DB:** Firebase
+## Authors
+
+- [@chaewy](https://github.com/chaewy)
+- [@Fiqnaj](https://github.com/Fiqnaj)
+- [@pphhh10](https://github.com/pphhh10)
+
